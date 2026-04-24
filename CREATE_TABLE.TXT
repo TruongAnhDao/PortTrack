@@ -1,0 +1,102 @@
+CREATE DATABASE IF NOT EXISTS port_track
+DEFAULT CHARACTER SET utf8mb4
+COLLATE utf8mb4_unicode_ci;
+
+USE port_track;
+
+CREATE TABLE users (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    username VARCHAR(100) UNIQUE NOT NULL,
+    password_hash VARCHAR(255) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB;
+
+CREATE TABLE rooms (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    code VARCHAR(50) UNIQUE NOT NULL,
+    type ENUM('PUBLIC', 'PRIVATE') NOT NULL,
+    password VARCHAR(255) NULL,
+    owner_id BIGINT NOT NULL,
+    initial_balance DECIMAL(20,2) NOT NULL COMMENT 'Vốn khởi tạo',
+    status ENUM('WAITING', 'RUNNING', 'FINISHED') DEFAULT 'WAITING',
+    start_time TIMESTAMP NOT NULL,
+    end_time TIMESTAMP NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_rooms_owner
+        FOREIGN KEY (owner_id)
+        REFERENCES users(id)
+        ON DELETE CASCADE
+) ENGINE=InnoDB;
+
+CREATE TABLE portfolios (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    user_id BIGINT NOT NULL,
+    room_id BIGINT NOT NULL,
+    cash_balance DECIMAL(20,2) NOT NULL COMMENT 'Sức mua còn lại',
+    version INT DEFAULT 0 COMMENT 'Optimistic Locking chặn Race Condition',
+    joined_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_portfolios_user
+        FOREIGN KEY (user_id)
+        REFERENCES users(id)
+        ON DELETE CASCADE,
+    CONSTRAINT fk_portfolios_room
+        FOREIGN KEY (room_id)
+        REFERENCES rooms(id)
+        ON DELETE CASCADE,
+    CONSTRAINT uq_user_room
+        UNIQUE (user_id, room_id)
+) ENGINE=InnoDB;
+
+CREATE TABLE portfolio_items (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    portfolio_id BIGINT NOT NULL,
+    symbol VARCHAR(20) NOT NULL,
+    quantity BIGINT NOT NULL DEFAULT 0,
+    avg_price DECIMAL(20,2) NOT NULL COMMENT 'Giá vốn trung bình',
+    version INT DEFAULT 0 COMMENT 'Optimistic Locking chặn Race Condition',
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        ON UPDATE CURRENT_TIMESTAMP,
+    CONSTRAINT fk_items_portfolio
+        FOREIGN KEY (portfolio_id)
+        REFERENCES portfolios(id)
+        ON DELETE CASCADE,
+    CONSTRAINT uq_portfolio_symbol
+        UNIQUE (portfolio_id, symbol)
+) ENGINE=InnoDB;
+
+CREATE TABLE transactions (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    portfolio_id BIGINT NOT NULL,
+    symbol VARCHAR(20) NOT NULL,
+    type ENUM('BUY', 'SELL') NOT NULL,
+    quantity BIGINT NOT NULL,
+    price DECIMAL(20,2) NOT NULL,
+    fee DECIMAL(20,2) DEFAULT 0 COMMENT 'Phí giao dịch',
+    tax DECIMAL(20,2) DEFAULT 0 COMMENT 'Thuế',
+    total_amount DECIMAL(20,2) NOT NULL COMMENT 'Tổng tiền giao dịch',
+    executed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_transactions_portfolio
+        FOREIGN KEY (portfolio_id)
+        REFERENCES portfolios(id)
+        ON DELETE CASCADE
+) ENGINE=InnoDB;
+
+CREATE TABLE daily_nav_history (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    portfolio_id BIGINT NOT NULL,
+    date DATE NOT NULL,
+    nav_value DECIMAL(20,2) NOT NULL,
+    CONSTRAINT fk_history_portfolio
+        FOREIGN KEY (portfolio_id)
+        REFERENCES portfolios(id)
+        ON DELETE CASCADE,
+    CONSTRAINT uq_portfolio_date
+        UNIQUE (portfolio_id, date)
+) ENGINE=InnoDB;
+
+CREATE INDEX idx_transactions_symbol ON transactions(symbol);
+CREATE INDEX idx_transactions_executed_at ON transactions(executed_at);
+CREATE INDEX idx_history_date ON daily_nav_history(date);
+CREATE INDEX idx_portfolio_items_symbol ON portfolio_items(symbol);
+
