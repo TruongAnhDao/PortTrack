@@ -1,0 +1,65 @@
+1. Bảng users: Quản lý thông tin tài khoản người dùng
+id (BIGINT): mã định danh của người dùng
+username (VARCHAR): tên đăng nhập
+password_hash (VARCHAR): mật khẩu đã mã hóa
+created_at (TIMESTAMP): thời gian tạo tài khoản
+
+Chức năng: lưu thông tin đăng nhập và nhận diện người dùng trong hệ thống.
+
+2. Bảng rooms: Quản lý thông tin phòng chơi
+id (BIGINT): mã phòng
+name (VARCHAR): tên phòng
+code (VARCHAR): mã phòng duy nhất
+type (ENUM): loại phòng (public/private)
+password (VARCHAR): mật khẩu phòng
+owner_id (BIGINT): người tạo phòng
+initial_balance (DECIMAL): vốn khởi tạo
+status (ENUM): trạng thái phòng
+start_time (TIMESTAMP): thời gian bắt đầu
+end_time (TIMESTAMP): thời gian kết thúc
+created_at (TIMESTAMP): thời gian tạo phòng
+
+Chức năng: lưu thông tin các phòng mô phỏng đầu tư.
+
+3. Bảng portfolios: Quản lý danh mục đầu tư của người dùng trong từng phòng
+id (BIGINT): mã danh mục
+user_id (BIGINT): người sở hữu danh mục
+room_id (BIGINT): phòng tương ứng
+cash_balance (DECIMAL): số dư tiền mặt còn lại
+version (INT): kiểm soát cập nhật đồng thời
+joined_at (TIMESTAMP): thời gian tham gia
+
+Chức năng: lưu số dư và thông tin danh mục đầu tư của mỗi người trong mỗi phòng.
+
+4. Bảng portfolio_items: Quản lý các cổ phiếu đang nắm giữ
+id (BIGINT): mã bản ghi
+portfolio_id (BIGINT): danh mục tương ứng
+symbol (VARCHAR): mã cổ phiếu
+quantity (BIGINT): số lượng cổ phiếu
+avg_price (DECIMAL): giá vốn trung bình
+version (INT): kiểm soát cập nhật đồng thời
+updated_at (TIMESTAMP): thời gian cập nhật
+
+Chức năng: lưu chi tiết các cổ phiếu hiện có trong danh mục.
+
+5. Bảng transactions: Quản lý lịch sử giao dịch
+id (BIGINT): mã giao dịch
+portfolio_id (BIGINT): danh mục thực hiện giao dịch
+symbol (VARCHAR): mã cổ phiếu
+type (ENUM): loại giao dịch (buy/sell)
+quantity (BIGINT): số lượng giao dịch
+price (DECIMAL): giá giao dịch
+fee (DECIMAL): phí giao dịch
+tax (DECIMAL): thuế
+total_amount (DECIMAL): tổng giá trị giao dịch
+executed_at (TIMESTAMP): thời gian thực hiện
+
+Chức năng: lưu toàn bộ lịch sử mua bán cổ phiếu.
+
+6. Bảng daily_nav_history: Lưu lịch sử giá trị tài sản theo ngày
+id (BIGINT): mã bản ghi
+portfolio_id (BIGINT): danh mục tương ứng
+date (DATE): ngày ghi nhận
+nav_value (DECIMAL): tổng giá trị tài sản
+
+Chức năng: phục vụ biểu đồ tăng trưởng tài sản và xếp hạng kết quả.
