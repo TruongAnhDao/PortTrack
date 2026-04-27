@@ -66,60 +66,49 @@ Main tables:
 ---
 ## Project structure
 
-porttrack-backend/
-├── src/main/java/com/musketeers/porttrack/
-│   ├── config/              # Config
-│   ├── controller/          # REST API endpoints
-│   ├── dto/
-│   │   ├── request/         # Request DTOs
-│   │   └── response/        # Response DTOs
-│   ├── entity/              # JPA entities mapping database tables
-│   ├── exception/           # Global exception handling
-│   ├── repository/          # Spring Data JPA repositories
-│   ├── security/            # JWT, authentication, authorization
-│   ├── service/
-│   │   ├── impl/            # Service implementations
-│   │   ├── RoomService.java
-│   │   ├── TradingService.java
-│   │   ├── PortfolioService.java
-│   │   └── UserService.java
-│   ├── scheduler/           # Daily NAV cron jobs
-│   └── PortTrackApplication.java
+PortTrack/
+├── CREATE_TABLE.TXT                     # Chứa lệnh SQL tạo database và các bảng
+├── Cấu trúc dữ liệu.txt                 # Giải thích chi tiết ý nghĩa các trường dữ liệu
+├── README.md                            # Thông tin giới thiệu chung về toàn bộ dự án
 │
-└── src/main/resources/
-    ├── application.yml
-    └── db/
-        └── migration/
+├── porttrack-backend/                   # THƯ MỤC BACKEND (SPRING BOOT)
+│   ├── .gitattributes                   # Cấu hình Git (xử lý lỗi dấu xuống dòng giữa Windows/Mac)
+│   ├── .gitignore                       # Chặn các file rác (thư mục target, log) không đưa lên Git
+│   ├── .mvn/wrapper/
+│   │   └── maven-wrapper.properties     # Cấu hình phiên bản Maven cụ thể cho dự án
+│   ├── mvnw                             # Script giúp chạy Maven trên Mac/Linux mà không cần cài đặt
+│   ├── mvnw.cmd                         # Script giúp chạy Maven trên Windows mà không cần cài đặt
+│   ├── pom.xml                          # File khai báo thư viện Java (Web, JPA, MySQL...)
+│   ├── src/main/java/.../PorttrackApplication.java  # File chạy chính (Main class) của Backend
+│   ├── src/main/resources/
+│   │   └── application.properties       # Nơi điền cổng (port), tên đăng nhập/mật khẩu MySQL
+│   └── src/test/.../PorttrackApplicationTests.java  # File dành để viết code tự động kiểm thử (Unit Test)
+│
+└── porttrack-frontend/                  # THƯ MỤC FRONTEND (REACTJS + VITE)
+    ├── .gitignore                       # Chặn thư mục node_modules siêu nặng không đẩy lên Git
+    ├── README.md                        # Hướng dẫn cách cài đặt và chạy Frontend
+    ├── eslint.config.js                 # Cấu hình "cảnh sát" kiểm tra lỗi cú pháp và chuẩn format code
+    ├── index.html                       # File HTML gốc duy nhất, chứa thẻ <div id="root">
+    ├── package-lock.json                # "Khóa" chính xác phiên bản của từng thư viện đang dùng
+    ├── package.json                     # Khai báo tên dự án, thư viện (react, axios...) và lệnh chạy (npm run dev)
+    ├── public/
+    │   ├── favicon.svg                  # Icon nhỏ hiển thị trên tab của trình duyệt
+    │   └── icons.svg                    # File gom các icon vector (SVG) dùng chung cho trang web
+    ├── src/
+    │   ├── App.css                      # CSS định dạng riêng cho Component App
+    │   ├── App.tsx                      # Component React mẹ, chứa khung sườn giao diện
+    │   ├── index.css                    # CSS áp dụng chung cho toàn bộ trang web
+    │   ├── main.tsx                     # Điểm vào đầu tiên, nhúng code React vào index.html
+    │   └── assets/                      # Thư mục chứa tài nguyên hình ảnh
+    │       ├── hero.png                 # Ảnh minh họa/banner có thể dùng cho trang chủ
+    │       ├── react.svg                # File logo của React
+    │       └── vite.svg                 # File logo của Vite
+    ├── tsconfig.app.json                # Cấu hình TypeScript dành riêng cho code giao diện React
+    ├── tsconfig.json                    # Cấu hình TypeScript tổng quát cho toàn dự án
+    ├── tsconfig.node.json               # Cấu hình TypeScript dành cho môi trường build (Vite/Node)
+    └── vite.config.ts                   # File cấu hình công cụ đóng gói Vite (chỉnh port, plugin...)
 
-porttrack-frontend/
-├── src/
-│   ├── assets/
-│   ├── components/
-│   │   ├── common/
-│   │   └── layout/
-│   │
-│   ├── features/
-│   │   ├── auth/
-│   │   ├── rooms/
-│   │   ├── trading/
-│   │   └── portfolio/
-│   │
-│   ├── hooks/
-│   ├── routes/
-│   ├── services/
-│   │   ├── apiClient.ts
-│   │   ├── authService.ts
-│   │   ├── roomService.ts
-│   │   ├── tradingService.ts
-│   │   └── portfolioService.ts
-│   │
-│   ├── store/
-│   ├── types/
-│   ├── utils/
-│   ├── pages/              # <-- thêm folder này
-│   └── App.tsx
-│
-├── .env
-└── package.json
+
+Lưu ý: Khi code màn nào hay chức năng nào thì cần phải chia folder và sắp xếp thật hợp lí vị trí file
 
 ## How to run
