@@ -21,7 +21,7 @@ export const Header: React.FC = () => {
           to="/login" 
           className="text-sm font-bold text-slate-300 hover:text-cyan-400 transition-colors uppercase tracking-widest"
         >
-          Đăng nhập
+          Login
         </Link>
       </div>
     </header>

@@ -31,29 +31,23 @@ export const LandingPage: React.FC = () => {
             {/* Cột Trái (Text) */}
             <div className="space-y-8 flex flex-col items-start z-10">
               <div className="inline-flex items-center px-4 py-1.5 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-sm font-semibold tracking-wide">
-                🚀 Nền tảng thực chiến chứng khoán
+                🚀 The Ultimate Stock Trading Simulator
               </div>
               <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black tracking-tight text-white leading-[1.15]">
-                TRẢI NGHIỆM ĐẦU TƯ THỰC TẾ. <br className="hidden lg:block"/>
+                EXPERIENCE REAL MARKET INVESTING. <br className="hidden lg:block"/>
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-500">
-                  KHÔNG RỦI RO TÀI CHÍNH.
+                  ZERO FINANCIAL RISK.
                 </span>
               </h1>
               <p className="text-lg sm:text-xl text-slate-400 max-w-xl leading-relaxed">
-                Giao dịch chứng khoán theo thời gian thực. Thi đấu cùng bạn bè, nâng cao kỹ năng mà không sợ mất vốn.
+                Trade stocks in real time with live market data. Compete with friends, sharpen your investment skills, and build confidence — all without risking your capital.
               </p>
               <div className="flex flex-wrap gap-4 pt-2">
                 <Link 
                   to="/register" 
                   className="px-8 py-3.5 rounded-xl bg-gradient-to-r from-blue-600 to-cyan-500 text-white font-bold transition-all hover:-translate-y-1 hover:shadow-[0_0_20px_rgba(59,130,246,0.5)]"
                 >
-                  MỞ TÀI KHOẢN NGAY
-                </Link>
-                <Link 
-                  to="/demo" 
-                  className="px-8 py-3.5 rounded-xl border-2 border-slate-700 hover:border-blue-500 text-slate-300 hover:text-blue-400 font-bold transition-all bg-slate-800/50 hover:bg-slate-800"
-                >
-                  Xem Demo
+                  OPEN AN ACCOUNT NOW
                 </Link>
               </div>
             </div>
@@ -82,18 +76,18 @@ export const LandingPage: React.FC = () => {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <FeatureCard 
               icon={<UserIcon />}
-              title="1. Tạo Tài Khoản"
-              description="Đăng ký miễn phí trong 30 giây."
+              title="1. Create Your Account"
+              description="Sign up for free in just 30 seconds."
             />
             <FeatureCard 
               icon={<RoomIcon />}
-              title="2. Tham Gia Phòng Chơi"
-              description="Nhập mã code phòng hoặc tự tạo sàn thi đấu mới."
+              title="2. Join a Trading Room"
+              description="Enter a room code or create your own trading arena."
             />
             <FeatureCard 
               icon={<ChartIcon />}
-              title="3. Bắt Đầu Giao Dịch"
-              description="Nhận vốn ảo và đặt lệnh mua bán sát với thị trường thực."
+              title="3. Start Trading"
+              description="Receive virtual capital and place buy/sell orders that mirror the real market."
             />
           </div>
         </section>
