@@ -112,3 +112,16 @@ PortTrack/
 Lưu ý: Khi code màn nào hay chức năng nào thì cần phải chia folder và sắp xếp thật hợp lí vị trí file
 
 ## How to run
+**1. Khởi động Backend (Spring Boot)**
+- Mở Terminal, di chuyển vào thư mục `cd porttrack-backend`
+- Đảm bảo đã cài Java 17 và cấu hình MySQL đúng trong `application.properties`.
+- Chạy lệnh:
+  - Windows: `.\mvnw spring-boot:run`
+  - Mac/Linux: `./mvnw spring-boot:run`
+- Server sẽ chạy tại: `http://localhost:8080`
+
+**2. Khởi động Frontend (ReactJS + Vite)**
+- Mở một Terminal khác, di chuyển vào thư mục `cd porttrack-frontend`
+- Cài đặt thư viện (chỉ chạy lần đầu): `npm install`
+- Khởi động giao diện: `npm run dev`
+- Truy cập trình duyệt tại: `http://localhost:5173`
