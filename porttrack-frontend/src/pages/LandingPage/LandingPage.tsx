@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { Header } from '../../components/layout/Header';
 import { Footer } from '../../components/layout/Footer';
 import { FeatureCard } from '../../components/common/FeatureCard';
-import heroImg from '../../assets/hero.jpg';
+import heroImg from '../../assets/hero.png';
 
 // Định nghĩa các SVG Icons nhỏ gọn
 const UserIcon = () => (
@@ -30,44 +30,55 @@ export const LandingPage: React.FC = () => {
             
             {/* Cột Trái (Text) */}
             <div className="space-y-8 flex flex-col items-start z-10">
-              <div className="inline-flex items-center px-4 py-1.5 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-sm font-semibold tracking-wide">
-                🚀 The Ultimate Stock Trading Simulator
+              <div className="inline-flex items-center px-4 py-2 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-sm font-semibold tracking-wide">
+                The Ultimate Stock Trading Simulator
               </div>
               <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black tracking-tight text-white leading-[1.15]">
-                EXPERIENCE REAL MARKET INVESTING. <br className="hidden lg:block"/>
+                EXPERIENCE REAL MARKET INVESTING <br className="hidden lg:block"/>
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-500">
-                  ZERO FINANCIAL RISK.
+                  ZERO FINANCIAL RISK
                 </span>
               </h1>
               <p className="text-lg sm:text-xl text-slate-400 max-w-xl leading-relaxed">
-                Trade stocks in real time with live market data. Compete with friends, sharpen your investment skills, and build confidence — all without risking your capital.
+                Trade stocks in real time with live market data. Compete with friends, sharpen your investment skills, and build confidence all without risking your capital.
               </p>
               <div className="flex flex-wrap gap-4 pt-2">
                 <Link 
                   to="/register" 
                   className="px-8 py-3.5 rounded-xl bg-gradient-to-r from-blue-600 to-cyan-500 text-white font-bold transition-all hover:-translate-y-1 hover:shadow-[0_0_20px_rgba(59,130,246,0.5)]"
                 >
-                  OPEN AN ACCOUNT NOW
+                  START TRADING FREE
                 </Link>
               </div>
             </div>
             
             {/* Cột Phải (Ảnh Hero) */}
-            <div className="relative flex justify-center items-center w-full">
-              {/* Blur backdrop để làm nổi bật ảnh */}
-              <div className="absolute w-3/4 h-3/4 bg-blue-500/20 rounded-full blur-[100px] z-0"></div>
-              
-              {/* Ảnh mix-blend-screen để hòa trộn vùng đen của ảnh vào nền slate-900, kèm mask-image để mờ viền dưới */}
-              <img 
-                src={heroImg} 
-                alt="PortTrack Trading Simulator" 
-                className="w-full max-w-xl object-contain mix-blend-screen opacity-90 relative z-10"
-                style={{
-                  maskImage: 'radial-gradient(circle at center, black 50%, transparent 50%)',
-                  WebkitMaskImage: 'linear-gradient(to bottom, black 80%, transparent 100%)'
-                }}
-              />
-            </div>
+            <div className="relative flex justify-center items-center w-full mt-10 lg:mt-0">
+  
+                {/* Lớp hào quang 1: Xanh dương đậm (Nền rộng nhất) */}
+                <div className="absolute w-4/5 h-4/5 bg-blue-600/30 rounded-full z-0 animate-ultimate-glow"></div>
+                
+                {/* Lớp hào quang 2: Xanh Cyan sáng (Tâm sáng) */}
+                <div className="absolute w-1/2 h-1/2 bg-cyan-400/40 rounded-full z-0 animate-ultimate-glow" style={{ animationDelay: '-1s' }}></div>
+                
+                {/* Lớp hào quang 3: Điểm nhấn cực sáng ở giữa */}
+                <div className="absolute w-1/3 h-1/3 bg-white/10 rounded-full z-0 animate-ultimate-glow blur-[60px]" style={{ animationDelay: '-2s' }}></div>
+                
+                {/* Container bọc ảnh để chạy hiệu ứng lơ lửng (Floating) */}
+                <div 
+                  className="relative z-10 w-full max-w-2xl animate-float" 
+                  style={{
+                    maskImage: 'radial-gradient(circle at center, black 60%, transparent 100%)',
+                    WebkitMaskImage: 'radial-gradient(circle at center, black 60%, transparent 100%)'
+                  }}
+                >
+                  <img 
+                    src={heroImg} 
+                    alt="PortTrack Trading Simulator" 
+                    className="w-full h-auto object-contain mix-blend-screen opacity-100 contrast-125 brightness-110"
+                  />
+                </div>
+              </div>
           </div>
         </section>
 

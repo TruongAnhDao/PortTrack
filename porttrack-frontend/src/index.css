@@ -9,3 +9,38 @@
     padding: 0;
   }
 }
+
+@theme {
+  --animate-float: float 6s ease-in-out infinite;
+  --animate-ultimate-glow: ultimate-glow 4s ease-in-out infinite;
+}
+
+/* Animation lơ lửng */
+@keyframes float {
+  0% { transform: translateY(0px); }
+  50% { transform: translateY(-20px); }
+  100% { transform: translateY(0px); }
+}
+
+/* Animation hào quang nhịp thở */
+@keyframes ultimate-glow {
+  0% { 
+    opacity: 0.5; 
+    transform: scale(1); 
+    filter: blur(80px);
+  }
+  50% { 
+    opacity: 0.9; 
+    transform: scale(1.2); 
+    filter: blur(110px);
+  }
+  100% { 
+    opacity: 0.5; 
+    transform: scale(1); 
+    filter: blur(80px);
+  }
+}
+
+.animate-ultimate-glow {
+  animation: ultimate-glow 4s ease-in-out infinite;
+}
