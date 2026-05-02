@@ -79,7 +79,20 @@ PortTrack/
 │   ├── mvnw                             # Script giúp chạy Maven trên Mac/Linux mà không cần cài đặt
 │   ├── mvnw.cmd                         # Script giúp chạy Maven trên Windows mà không cần cài đặt
 │   ├── pom.xml                          # File khai báo thư viện Java (Web, JPA, MySQL...)
-│   ├── src/main/java/.../PorttrackApplication.java  # File chạy chính (Main class) của Backend
+│   ├── src/main/java/com/musketeers/porttrack
+|   |   ├── PorttrackApplication.java  # File chạy chính (Main class) của Backend
+|   |   ├── config/           # Cấu hình toàn cục (Security, WebSocket, CORS, Swagger...)
+|   |   ├── controller/       # Nơi tiếp nhận Request từ Frontend (API Endpoints)
+|   |   ├── dto/              # Data Transfer Object (Đối tượng giao tiếp với Frontend)
+|   |   │   ├── request/      # DTO hứng dữ liệu từ Frontend gửi lên
+|   |   │   └── response/     # DTO trả dữ liệu về cho Frontend
+|   |   ├── entity/           # Các Class ánh xạ 1-1 với bảng trong Database (MySQL)
+|   |   ├── exception/        # Bắt và xử lý lỗi tập trung (GlobalExceptionHandler)
+|   |   ├── repository/       # Giao tiếp với Database (Spring Data JPA)
+|   |   ├── security/         # Chứa lõi bảo mật (Bộ lọc JWT, CustomUserDetails...)
+|   |   ├── service/          # Chứa logic nghiệp vụ (Interfaces)
+|   |   │   └── impl/         # Triển khai chi tiết của Interfaces
+|   |   └── util/             # Các hàm tiện ích dùng chung (Format ngày tháng, String...)
 │   ├── src/main/resources/
 │   │   └── application.properties       # Nơi điền cổng (port), tên đăng nhập/mật khẩu MySQL
 │   └── src/test/.../PorttrackApplicationTests.java  # File dành để viết code tự động kiểm thử (Unit Test)
