@@ -6,6 +6,7 @@ export const Header: React.FC = () => {
   return (
     <header className="fixed top-0 left-0 w-full z-50 bg-slate-950/80 backdrop-blur-md border-b border-slate-800 transition-all">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+        <div className="flex items-center gap-10 lg:gap-16">
         {/* Logo Section */}
         <Link to="/" className="flex items-center gap-1">
           <img 
@@ -18,6 +19,20 @@ export const Header: React.FC = () => {
             PORT<span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-600">TRACK</span>
           </span>
         </Link>
+
+        {/* Navigation Menu (Chỉ hiển thị trên tablet/desktop) */}
+        <nav className="hidden md:flex items-center gap-8">
+          <a href="#how-it-works" className="text-base font-semibold text-slate-300 hover:text-cyan-400 hover:-translate-y-0.5 transition-colors">
+            How it works
+          </a>
+          <a href="#why-porttrack" className="text-base font-semibold text-slate-300 hover:text-cyan-400 hover:-translate-y-0.5 transition-colors">
+            Why us
+          </a>
+          <a href="#who-is-it-for" className="text-base font-semibold text-slate-300 hover:text-cyan-400 hover:-translate-y-0.5 transition-colors">
+            For whom
+          </a>
+        </nav>
+        </div>
         
         {/* Auth Buttons */}
         <div className="flex items-center gap-6">

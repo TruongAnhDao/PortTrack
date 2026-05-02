@@ -2,6 +2,13 @@
 
 /* Thiết lập nền mặc định cho toàn trang để tránh viền trắng */
 @layer base {
+  html {
+    /* Cuộn mượt mà */
+    scroll-behavior: smooth;
+    /* MẸO: Trừ hao đúng chiều cao của Header (h-20 = 80px) để tiêu đề không bị che khuất */
+    scroll-padding-top: 80px; 
+  }
+  
   body {
     background-color: #0f172a; /* Mã màu tương đương bg-slate-900 */
     color: #f8fafc;

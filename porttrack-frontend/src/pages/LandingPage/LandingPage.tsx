@@ -83,7 +83,7 @@ export const LandingPage: React.FC = () => {
         </section>
 
         {/* SECTION 1: HOW IT WORKS */}
-        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 lg:py-28 border-t border-slate-800/50">
+        <section id="how-it-works" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 py-12 lg:py-28 border-t border-slate-800/50">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-extrabold text-white mb-4">How it works</h2>
             <p className="text-slate-400 max-w-2xl mx-auto">Start your trading journey in three simple steps.</p>
@@ -108,7 +108,7 @@ export const LandingPage: React.FC = () => {
         </section>
 
         {/* SECTION 2: WHY PORTTRACK? */}
-        <section className="bg-slate-900/30 py-20 lg:py-28 border-y border-slate-800/50">
+        <section id="why-porttrack" className="bg-slate-900/30 pt-24 py-20 lg:py-28 border-y border-slate-800/50">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-16">
               <h2 className="text-3xl md:text-4xl font-extrabold text-white mb-4">Why PortTrack?</h2>
@@ -141,7 +141,7 @@ export const LandingPage: React.FC = () => {
         </section>
 
         {/* SECTION 3: WHO IS IT FOR? */}
-        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 lg:py-28">
+        <section id="who-is-it-for" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 py-20 lg:py-28">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-extrabold text-white mb-4">Who is it for?</h2>
             <p className="text-slate-400 max-w-2xl mx-auto">Designed for everyone from curious beginners to academic institutions.</p>
