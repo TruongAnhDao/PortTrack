@@ -129,9 +129,9 @@ Lưu ý: Khi code màn nào hay chức năng nào thì cần phải chia folder 
 - Mở Terminal, di chuyển vào thư mục `cd porttrack-backend`
 - Đảm bảo đã cài Java 17 và cấu hình MySQL đúng trong `application.properties`.
 - Chạy lệnh:
-  - Windows: `.\mvnw spring-boot:run`
+  - Windows: `.\mvnw spring-boot:run` hoặc run file app
   - Mac/Linux: `./mvnw spring-boot:run`
-- Server sẽ chạy tại: `http://localhost:8080`
+- Server sẽ chạy tại: `http://localhost:8081`
 
 **2. Khởi động Frontend (ReactJS + Vite)**
 - Mở một Terminal khác, di chuyển vào thư mục `cd porttrack-frontend`
