@@ -138,3 +138,7 @@ Lưu ý: Khi code màn nào hay chức năng nào thì cần phải chia folder 
 - Cài đặt thư viện (chỉ chạy lần đầu): `npm install`
 - Khởi động giao diện: `npm run dev`
 - Truy cập trình duyệt tại: `http://localhost:5173`
+
+**3. Cách test gọi API giá
+- 'cd test-mqtt-stock'
+- 'node test-current-price.js'
