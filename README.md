@@ -135,10 +135,11 @@ Lưu ý: Khi code màn nào hay chức năng nào thì cần phải chia folder 
 
 **2. Khởi động Frontend (ReactJS + Vite)**
 - Mở một Terminal khác, di chuyển vào thư mục `cd porttrack-frontend`
-- Cài đặt thư viện (chỉ chạy lần đầu): `npm install`
+- Cài đặt thư viện (chỉ chạy lần đầu): `npm install`, `npm install axios react-router-dom`
+
 - Khởi động giao diện: `npm run dev`
 - Truy cập trình duyệt tại: `http://localhost:5173`
 
 **3. Cách test gọi API giá
-- 'cd test-mqtt-stock'
-- 'node test-current-price.js'
+- `cd test-mqtt-stock`
+- `node test-current-price.js`
