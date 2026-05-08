@@ -43,18 +43,21 @@ public class AuthServiceImpl implements AuthService {
     @Override
     @Transactional
     public AuthResponse register(RegisterRequest request) {
+        // 1. Kiểm tra user tồn tại
         if (userRepository.existsByUsername(request.getUsername())) {
-            throw new RuntimeException("Tên đăng nhập đã tồn tại!"); // Sẽ được bắt ở ControllerAdvice
+            throw new RuntimeException("Tên đăng nhập đã tồn tại!");
         }
 
+        // 2. Tạo đối tượng User và MÃ HÓA MẬT KHẨU
         User user = User.builder()
                 .username(request.getUsername())
                 .passwordHash(passwordEncoder.encode(request.getPassword()))
                 .build();
 
+        // 3. Lưu xuống database
         userRepository.save(user);
 
-        // Tự động đăng nhập sau khi đăng ký thành công
+        // 4. Tự động đăng nhập sau khi đăng ký thành công để trả về Token
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword())
         );
