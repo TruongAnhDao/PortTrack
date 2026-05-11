@@ -3,13 +3,12 @@ package com.musketeers.porttrack.service.impl;
 import com.musketeers.porttrack.dto.request.CreateRoomRequest;
 import com.musketeers.porttrack.dto.request.JoinRoomRequest;
 import com.musketeers.porttrack.dto.response.RoomResponse;
+import com.musketeers.porttrack.entity.Portfolio;
 import com.musketeers.porttrack.entity.Room;
-import com.musketeers.porttrack.entity.RoomMember;
 import com.musketeers.porttrack.entity.User;
-import com.musketeers.porttrack.entity.enums.RoomRole;
 import com.musketeers.porttrack.entity.enums.RoomStatus;
 import com.musketeers.porttrack.entity.enums.RoomType;
-import com.musketeers.porttrack.repository.RoomMemberRepository;
+import com.musketeers.porttrack.repository.PortfolioRepository;
 import com.musketeers.porttrack.repository.RoomRepository;
 import com.musketeers.porttrack.repository.UserRepository;
 import com.musketeers.porttrack.service.RoomService;
@@ -27,17 +26,15 @@ import java.util.stream.Collectors;
 public class RoomServiceImpl implements RoomService {
 
     private final RoomRepository roomRepository;
-    private final RoomMemberRepository roomMemberRepository;
+    private final PortfolioRepository portfolioRepository;
     private final UserRepository userRepository;
 
-    // Helper: Lấy user hiện tại đang đăng nhập từ Security Context
     private User getCurrentUser() {
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
         return userRepository.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy thông tin người dùng xác thực"));
     }
 
-    // Helper: Sinh mã code phòng ngẫu nhiên 6 ký tự
     private String generateUniqueRoomCode() {
         String characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
         SecureRandom random = new SecureRandom();
@@ -48,11 +45,10 @@ public class RoomServiceImpl implements RoomService {
                 sb.append(characters.charAt(random.nextInt(characters.length())));
             }
             code = sb.toString();
-        } while (roomRepository.existsByCode(code)); // Đảm bảo unique
+        } while (roomRepository.existsByCode(code));
         return code;
     }
 
-    // Helper: Map Entity -> DTO
     private RoomResponse mapToResponse(Room room) {
         return RoomResponse.builder()
                 .id(room.getId())
@@ -68,16 +64,15 @@ public class RoomServiceImpl implements RoomService {
     }
 
     @Override
-    @Transactional // Đảm bảo ACID
+    @Transactional
     public RoomResponse createRoom(CreateRoomRequest request) {
         User currentUser = getCurrentUser();
 
-        // Validate mật khẩu nếu phòng PRIVATE
         if (request.getType() == RoomType.PRIVATE && (request.getPassword() == null || request.getPassword().isBlank())) {
             throw new RuntimeException("Phòng PRIVATE yêu cầu phải có mật khẩu");
         }
 
-        // 1. Tạo Room
+        // 1. Tạo phòng với owner_id là User hiện tại
         Room room = Room.builder()
                 .name(request.getName())
                 .code(generateUniqueRoomCode())
@@ -92,15 +87,14 @@ public class RoomServiceImpl implements RoomService {
         
         Room savedRoom = roomRepository.save(room);
 
-        // 2. Thêm Owner vào bảng RoomMember
-        RoomMember roomMember = RoomMember.builder()
-                .roomId(savedRoom.getId())
-                .userId(currentUser.getId())
-                .role(RoomRole.OWNER)
-                .cashBalance(savedRoom.getInitialBalance()) // Cấp vốn khởi tạo
+        // 2. Tạo Portfolio (Danh mục) ngay cho Chủ phòng với mức vốn quy định
+        Portfolio portfolio = Portfolio.builder()
+                .user(currentUser)
+                .room(savedRoom)
+                .cashBalance(savedRoom.getInitialBalance())
                 .build();
         
-        roomMemberRepository.save(roomMember);
+        portfolioRepository.save(portfolio);
 
         return mapToResponse(savedRoom);
     }
@@ -113,27 +107,25 @@ public class RoomServiceImpl implements RoomService {
         Room room = roomRepository.findByCode(request.getCode())
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy phòng với mã này"));
 
-        // Kiểm tra mật khẩu nếu phòng PRIVATE
         if (room.getType() == RoomType.PRIVATE) {
             if (request.getPassword() == null || !request.getPassword().equals(room.getPassword())) {
                 throw new RuntimeException("Mật khẩu phòng không chính xác");
             }
         }
 
-        // Kiểm tra xem user đã ở trong phòng chưa
-        if (roomMemberRepository.existsByUserIdAndRoomId(currentUser.getId(), room.getId())) {
+        // 1. Check xem User đã được cấp Portfolio ở phòng này chưa
+        if (portfolioRepository.existsByUserIdAndRoomId(currentUser.getId(), room.getId())) {
             throw new RuntimeException("Bạn đã tham gia phòng này rồi");
         }
 
-        // Thêm User vào bảng RoomMember
-        RoomMember roomMember = RoomMember.builder()
-                .roomId(room.getId())
-                .userId(currentUser.getId())
-                .role(RoomRole.PLAYER)
-                .cashBalance(room.getInitialBalance()) // Cấp vốn khởi tạo giống mức quy định của phòng
+        // 2. Tạo Portfolio cho User tham gia với mức vốn của phòng
+        Portfolio portfolio = Portfolio.builder()
+                .user(currentUser)
+                .room(room)
+                .cashBalance(room.getInitialBalance())
                 .build();
 
-        roomMemberRepository.save(roomMember);
+        portfolioRepository.save(portfolio);
 
         return mapToResponse(room);
     }
@@ -142,14 +134,12 @@ public class RoomServiceImpl implements RoomService {
     public List<RoomResponse> getMyRooms() {
         User currentUser = getCurrentUser();
 
-        // Tìm tất cả các record member của user này
-        List<RoomMember> participations = roomMemberRepository.findByUserId(currentUser.getId());
+        // Lấy tất cả các Danh mục (Portfolio) của User này, sau đó trích xuất ra Room tương ứng
+        List<Portfolio> portfolios = portfolioRepository.findByUserId(currentUser.getId());
 
-        // Lấy ra thông tin Room tương ứng và map ra Response
-        return participations.stream()
-                .map(participation -> roomRepository.findById(participation.getRoomId())
-                        .orElseThrow(() -> new RuntimeException("Lỗi dữ liệu: Không tìm thấy phòng")))
-                .map(this::mapToResponse)
+        return portfolios.stream()
+                .map(Portfolio::getRoom) // Trích xuất Entity Room từ Portfolio
+                .map(this::mapToResponse) // Map sang DTO Response
                 .collect(Collectors.toList());
     }
 }
