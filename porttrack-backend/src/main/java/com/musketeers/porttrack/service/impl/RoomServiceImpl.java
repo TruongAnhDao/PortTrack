@@ -2,6 +2,7 @@ package com.musketeers.porttrack.service.impl;
 
 import com.musketeers.porttrack.dto.request.CreateRoomRequest;
 import com.musketeers.porttrack.dto.request.JoinRoomRequest;
+import com.musketeers.porttrack.dto.response.JoinedRoomResponse;
 import com.musketeers.porttrack.dto.response.RoomResponse;
 import com.musketeers.porttrack.entity.Portfolio;
 import com.musketeers.porttrack.entity.Room;
@@ -49,7 +50,7 @@ public class RoomServiceImpl implements RoomService {
         return code;
     }
 
-    private RoomResponse mapToResponse(Room room) {
+    private RoomResponse mapToRoomResponse(Room room) {
         return RoomResponse.builder()
                 .id(room.getId())
                 .name(room.getName())
@@ -72,7 +73,7 @@ public class RoomServiceImpl implements RoomService {
             throw new RuntimeException("Phòng PRIVATE yêu cầu phải có mật khẩu");
         }
 
-        // 1. Tạo phòng với owner_id là User hiện tại
+        // CHỈ LƯU ROOM, KHÔNG TẠO PORTFOLIO CHO OWNER (Theo logic mới)
         Room room = Room.builder()
                 .name(request.getName())
                 .code(generateUniqueRoomCode())
@@ -85,61 +86,55 @@ public class RoomServiceImpl implements RoomService {
                 .endTime(request.getEndTime())
                 .build();
         
-        Room savedRoom = roomRepository.save(room);
-
-        // 2. Tạo Portfolio (Danh mục) ngay cho Chủ phòng với mức vốn quy định
-        Portfolio portfolio = Portfolio.builder()
-                .user(currentUser)
-                .room(savedRoom)
-                .cashBalance(savedRoom.getInitialBalance())
-                .build();
-        
-        portfolioRepository.save(portfolio);
-
-        return mapToResponse(savedRoom);
+        return mapToRoomResponse(roomRepository.save(room));
     }
 
     @Override
     @Transactional
     public RoomResponse joinRoom(JoinRoomRequest request) {
         User currentUser = getCurrentUser();
-
         Room room = roomRepository.findByCode(request.getCode())
-                .orElseThrow(() -> new RuntimeException("Không tìm thấy phòng với mã này"));
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy phòng"));
 
-        if (room.getType() == RoomType.PRIVATE) {
-            if (request.getPassword() == null || !request.getPassword().equals(room.getPassword())) {
-                throw new RuntimeException("Mật khẩu phòng không chính xác");
-            }
+        // Player không được tham gia vào chính phòng mình tạo để chơi
+        if (room.getOwnerId().equals(currentUser.getId())) {
+            throw new RuntimeException("Bạn là chủ phòng này, không thể tham gia với tư cách người chơi");
         }
 
-        // 1. Check xem User đã được cấp Portfolio ở phòng này chưa
+        if (room.getType() == RoomType.PRIVATE && !room.getPassword().equals(request.getPassword())) {
+            throw new RuntimeException("Mật khẩu không chính xác");
+        }
+
         if (portfolioRepository.existsByUserIdAndRoomId(currentUser.getId(), room.getId())) {
             throw new RuntimeException("Bạn đã tham gia phòng này rồi");
         }
 
-        // 2. Tạo Portfolio cho User tham gia với mức vốn của phòng
         Portfolio portfolio = Portfolio.builder()
                 .user(currentUser)
                 .room(room)
                 .cashBalance(room.getInitialBalance())
                 .build();
-
         portfolioRepository.save(portfolio);
 
-        return mapToResponse(room);
+        return mapToRoomResponse(room);
     }
 
     @Override
-    public List<RoomResponse> getMyRooms() {
+    public List<RoomResponse> getOwnedRooms() {
         User currentUser = getCurrentUser();
+        return roomRepository.findByOwnerId(currentUser.getId()).stream()
+                .map(this::mapToRoomResponse)
+                .collect(Collectors.toList());
+    }
 
-        // Lấy tất cả các Danh mục (Portfolio) của User này, sau đó trích xuất ra Room tương ứng
-        List<Portfolio> portfolios = portfolioRepository.findByUserId(currentUser.getId());
-
-        return portfolios.stream()
-                .map(Portfolio::getRoom) // Trích xuất Entity Room từ Portfolio
-                .map(this::mapToResponse) // Map sang DTO Response
+    @Override
+    public List<JoinedRoomResponse> getJoinedRooms() {
+        User currentUser = getCurrentUser();
+        return portfolioRepository.findByUserId(currentUser.getId()).stream()
+                .map(portfolio -> JoinedRoomResponse.builder()
+                        .roomInfo(mapToRoomResponse(portfolio.getRoom()))
+                        .currentCashBalance(portfolio.getCashBalance())
+                        .build())
                 .collect(Collectors.toList());
     }
 }

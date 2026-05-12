@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Header } from '../../components/layout/Header';
 import { Footer } from '../../components/layout/Footer';
@@ -9,10 +9,20 @@ import heroImg from '../../assets/hero.png';
 import { 
   UserPlus, LogIn, LineChart, 
   ShieldCheck, Activity, PieChart, 
-  GraduationCap, TrendingUp, Users 
+  GraduationCap, TrendingUp, Users, ArrowRight
 } from 'lucide-react';
 
 export const LandingPage: React.FC = () => {
+  // Logic kiểm tra trạng thái đăng nhập
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      setIsLoggedIn(true);
+    }
+  }, []);
+
   return (
     <div className="min-h-screen flex flex-col bg-slate-950 text-slate-50 font-sans selection:bg-blue-500/30">
       <Header />
@@ -43,11 +53,16 @@ export const LandingPage: React.FC = () => {
               </p>
               
               <div className="flex flex-wrap gap-5 pt-4">
+                {/* Nút bấm thay đổi theo trạng thái đăng nhập */}
                 <Link 
-                  to="/register" 
-                  className="px-8 py-4 rounded-xl bg-gradient-to-r from-blue-600 to-cyan-500 text-white font-bold transition-all hover:-translate-y-1 hover:shadow-[0_0_20px_rgba(59,130,246,0.5)]"
+                  to={isLoggedIn ? "/dashboard" : "/register"} 
+                  className="px-8 py-4 rounded-xl bg-gradient-to-r from-blue-600 to-cyan-500 text-white font-bold transition-all hover:-translate-y-1 hover:shadow-[0_0_20px_rgba(59,130,246,0.5)] flex items-center justify-center gap-2"
                 >
-                  OPEN ACCOUNT NOW
+                  {isLoggedIn ? (
+                    <>GO TO DASHBOARD <ArrowRight size={20} /></>
+                  ) : (
+                    "OPEN ACCOUNT NOW"
+                  )}
                 </Link>
               </div>
             </div>
@@ -171,15 +186,24 @@ export const LandingPage: React.FC = () => {
              <div className="w-[800px] h-[500px] bg-blue-500 blur-[150px] rounded-full mix-blend-screen"></div>
           </div>
           <div className="max-w-4xl mx-auto px-4 relative z-10 text-center flex flex-col items-center">
-            <h2 className="text-4xl md:text-5xl font-extrabold text-white mb-6">Ready to master the market?</h2>
+            {/* Header và Text thay đổi theo trạng thái */}
+            <h2 className="text-4xl md:text-5xl font-extrabold text-white mb-6">
+              {isLoggedIn ? "Ready for your next trade?" : "Ready to master the market?"}
+            </h2>
             <p className="text-xl text-slate-300 mb-10 max-w-2xl">
-              Join PortTrack today and start building your risk-free portfolio in seconds.
+              {isLoggedIn 
+                ? "Go to your dashboard to manage rooms and continue your trading journey."
+                : "Join PortTrack today and start building your risk-free portfolio in seconds."}
             </p>
             <Link 
-              to="/register" 
-              className="px-10 py-5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-lg font-bold transition-all shadow-[0_0_30px_rgba(37,99,235,0.4)] hover:shadow-[0_0_40px_rgba(37,99,235,0.6)] hover:-translate-y-1"
+              to={isLoggedIn ? "/dashboard" : "/register"} 
+              className="px-10 py-5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-lg font-bold transition-all shadow-[0_0_30px_rgba(37,99,235,0.4)] hover:shadow-[0_0_40px_rgba(37,99,235,0.6)] hover:-translate-y-1 flex items-center justify-center gap-2"
             >
-              Create Free Account
+              {isLoggedIn ? (
+                <>GO TO DASHBOARD <ArrowRight size={22} /></>
+              ) : (
+                "Create Free Account"
+              )}
             </Link>
           </div>
         </section>

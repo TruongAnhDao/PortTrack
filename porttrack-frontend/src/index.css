@@ -48,6 +48,27 @@
   }
 }
 
+@layer utilities {
+  /* Ẩn thanh cuộn cho Chrome, Safari và Opera */
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  
+  /* Ẩn thanh cuộn cho IE, Edge và Firefox */
+  .no-scrollbar {
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;  /* Firefox */
+  }
+}
+
 .animate-ultimate-glow {
   animation: ultimate-glow 4s ease-in-out infinite;
+}
+
+/* Hiệu ứng shadow mềm cho nút bấm Premium */
+.shadow-premium {
+  box-shadow: 0 0 20px -5px rgba(59, 130, 246, 0.3);
+}
+.shadow-premium:hover {
+  box-shadow: 0 0 25px -2px rgba(59, 130, 246, 0.5);
 }
