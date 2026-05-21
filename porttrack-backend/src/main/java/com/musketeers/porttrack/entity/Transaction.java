@@ -26,29 +26,33 @@ public class Transaction {
     @JoinColumn(name = "portfolio_id", nullable = false)
     private Portfolio portfolio;
 
-    @Column(name = "symbol", nullable = false, length = 10)
+    // FIX: Tăng length lên 20
+    @Column(name = "symbol", nullable = false, length = 20)
     private String symbol;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "type", nullable = false)
     private TradeAction type;
 
+    // FIX: Chuyển Integer thành Long
     @Column(name = "quantity", nullable = false)
-    private Integer quantity;
+    private Long quantity;
 
-    @Column(name = "price", nullable = false, precision = 15, scale = 2)
+    // FIX: Tăng precision lên 20 cho toàn bộ tiền tệ
+    @Column(name = "price", nullable = false, precision = 20, scale = 2)
     private BigDecimal price;
 
-    @Column(name = "fee", nullable = false, precision = 15, scale = 2)
+    @Column(name = "fee", nullable = false, precision = 20, scale = 2)
     private BigDecimal fee;
 
-    @Column(name = "tax", nullable = false, precision = 15, scale = 2)
+    @Column(name = "tax", nullable = false, precision = 20, scale = 2)
     private BigDecimal tax;
 
-    @Column(name = "total_amount", nullable = false, precision = 15, scale = 2)
+    @Column(name = "total_amount", nullable = false, precision = 20, scale = 2)
     private BigDecimal totalAmount;
 
+    // FIX: Đổi name thành executed_at theo thiết kế SQL
     @CreationTimestamp
-    @Column(name = "created_at", updatable = false)
-    private LocalDateTime createdAt;
+    @Column(name = "executed_at", updatable = false)
+    private LocalDateTime executedAt;
 }

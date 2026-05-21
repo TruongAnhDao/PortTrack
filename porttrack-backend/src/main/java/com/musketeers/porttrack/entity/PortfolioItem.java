@@ -23,13 +23,16 @@ public class PortfolioItem {
     @JoinColumn(name = "portfolio_id", nullable = false)
     private Portfolio portfolio;
 
-    @Column(name = "symbol", nullable = false, length = 10)
+    // FIX: Tăng length lên 20
+    @Column(name = "symbol", nullable = false, length = 20)
     private String symbol;
 
+    // FIX: Chuyển Integer thành Long (BIGINT)
     @Column(name = "quantity", nullable = false)
-    private Integer quantity;
+    private Long quantity;
 
-    @Column(name = "avg_price", nullable = false, precision = 15, scale = 2)
+    // FIX: Tăng precision lên 20
+    @Column(name = "avg_price", nullable = false, precision = 20, scale = 2)
     private BigDecimal avgPrice;
 
     @Version

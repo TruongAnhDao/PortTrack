@@ -16,5 +16,5 @@ public class TradeRequest {
 
     @NotNull(message = "Số lượng không được để trống")
     @Min(value = 1, message = "Số lượng giao dịch tối thiểu là 1")
-    private Integer quantity;
+    private Long quantity; // FIX: Đổi từ Integer sang Long
 }

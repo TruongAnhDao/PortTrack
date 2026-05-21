@@ -21,20 +21,18 @@ public class Portfolio {
     @Column(name = "id")
     private Long id;
 
-    // Liên kết với bảng users qua user_id
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    // Liên kết với bảng rooms qua room_id
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "room_id", nullable = false)
     private Room room;
 
-    @Column(name = "cash_balance", nullable = false)
+    // FIX: Đồng bộ DECIMAL(20,2) với DB
+    @Column(name = "cash_balance", nullable = false, precision = 20, scale = 2)
     private BigDecimal cashBalance;
 
-    // Optimistic locking để khóa khi có nhiều giao dịch cùng lúc
     @Version
     @Column(name = "version")
     private Long version;
