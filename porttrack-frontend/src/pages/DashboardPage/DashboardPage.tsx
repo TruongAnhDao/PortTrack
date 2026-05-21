@@ -1,8 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
-import { LogOut, Plus, KeyRound, ShieldCheck, TrendingUp, Loader2 } from 'lucide-react';
-import logo from '../../assets/logo.png';
-import { roomService } from '../../services/roomService';
+import { useNavigate } from 'react-router-dom';
+import { Plus, KeyRound, ShieldCheck, TrendingUp, Loader2 } from 'lucide-react';
+import { roomService, type RoomCardData } from '../../services/roomService';
 import { RoomCard } from '../../components/dashboard/RoomCard';
 import { CreateRoomModal } from '../../components/dashboard/CreateRoomModal';
 import { JoinRoomModal } from '../../components/dashboard/JoinRoomModal';
@@ -10,10 +9,8 @@ import { Header } from '../../components/layout/Header';
 
 export const DashboardPage: React.FC = () => {
   const navigate = useNavigate();
-  const username = localStorage.getItem('username') || 'Trader';
-  
   const [activeTab, setActiveTab] = useState<'managed' | 'joined'>('managed');
-  const [rooms, setRooms] = useState<any[]>([]);
+  const [rooms, setRooms] = useState<RoomCardData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showJoinModal, setShowJoinModal] = useState(false);
@@ -30,7 +27,12 @@ export const DashboardPage: React.FC = () => {
         setCounts(prev => ({ ...prev, managed: roomList.length }));
       } else {
         const data = await roomService.getJoinedRooms();
-        const roomList = Array.isArray(data) ? data : [];
+        const roomList = Array.isArray(data)
+          ? data.map((joined) => ({
+              ...joined.roomInfo,
+              currentCashBalance: joined.currentCashBalance,
+            }))
+          : [];
         setRooms(roomList);
         setCounts(prev => ({ ...prev, joined: roomList.length }));
       }
@@ -43,12 +45,6 @@ export const DashboardPage: React.FC = () => {
   };
 
   useEffect(() => { fetchRooms(); }, [activeTab]);
-
-  const handleLogout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('username');
-    navigate('/');
-  };
 
   return (
     <div className="min-h-screen flex flex-col text-slate-50 relative overflow-hidden bg-slate-950">
@@ -134,8 +130,13 @@ export const DashboardPage: React.FC = () => {
                  <p className="text-slate-500">Start by creating or joining a room to see them here.</p>
                </div>
             ) : (
-              rooms.map((room, idx) => (
-                <RoomCard key={room.id || idx} room={room} variant={activeTab} onActionClick={(id) => console.log(id)} />
+              rooms.map((room) => (
+                <RoomCard
+                  key={room.id}
+                  room={room}
+                  variant={activeTab}
+                  onActionClick={(id) => navigate(activeTab === 'managed' ? `/room/${id}` : `/room/${id}/trade`)}
+                />
               ))
             )}
           </div>

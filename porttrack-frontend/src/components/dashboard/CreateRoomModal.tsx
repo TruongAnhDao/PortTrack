@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
 import { X, PlusCircle, AlertCircle } from 'lucide-react';
-import { roomService } from '../../services/roomService';
+import { roomService, type CreateRoomData } from '../../services/roomService';
 
 interface Props { isOpen: boolean; onClose: () => void; onSuccess: () => void; }
 
 export const CreateRoomModal: React.FC<Props> = ({ isOpen, onClose, onSuccess }) => {
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<CreateRoomData>({
     name: '', type: 'PUBLIC', password: '', initialBalance: 100000000, startTime: '', endTime: ''
   });
   const [loading, setLoading] = useState(false);

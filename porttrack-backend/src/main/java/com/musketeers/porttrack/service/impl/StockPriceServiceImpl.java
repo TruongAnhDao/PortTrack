@@ -1,14 +1,129 @@
 package com.musketeers.porttrack.service.impl;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.musketeers.porttrack.dto.response.StockPriceResponse;
 import com.musketeers.porttrack.service.StockPriceService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+
 import java.math.BigDecimal;
+import java.net.URI;
+import java.net.URLEncoder;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.nio.charset.StandardCharsets;
+import java.time.DayOfWeek;
+import java.time.Duration;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.time.ZoneId;
 
 @Service
+@RequiredArgsConstructor
 public class StockPriceServiceImpl implements StockPriceService {
+
+    private static final ZoneId VIETNAM_ZONE = ZoneId.of("Asia/Ho_Chi_Minh");
+    private static final BigDecimal PRICE_MULTIPLIER = new BigDecimal("1000");
+
+    private final ObjectMapper objectMapper;
+
     @Override
     public BigDecimal getCurrentPrice(String symbol) {
-        // Mock giá: 25,000 VND cho mọi cổ phiếu
-        return new BigDecimal("25000"); 
+        return getLatestQuote(symbol).getPrice();
+    }
+
+    @Override
+    public StockPriceResponse getLatestQuote(String symbol) {
+        String normalizedSymbol = normalizeSymbol(symbol);
+
+        try {
+            long toDate = Instant.now().getEpochSecond();
+            long fromDate = toDate - (3L * 24 * 60 * 60);
+            String encodedSymbol = URLEncoder.encode(normalizedSymbol, StandardCharsets.UTF_8);
+            String url = "https://services.entrade.com.vn/chart-api/v2/ohlcs/stock"
+                    + "?from=" + fromDate
+                    + "&to=" + toDate
+                    + "&symbol=" + encodedSymbol
+                    + "&resolution=1";
+
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create(url))
+                    .timeout(Duration.ofSeconds(10))
+                    .GET()
+                    .build();
+
+            HttpResponse<String> response = HttpClient.newHttpClient()
+                    .send(request, HttpResponse.BodyHandlers.ofString());
+
+            if (response.statusCode() < 200 || response.statusCode() >= 300) {
+                throw new RuntimeException("Cannot fetch stock price. HTTP status: " + response.statusCode());
+            }
+
+            JsonNode root = objectMapper.readTree(response.body());
+            JsonNode timestamps = root.get("t");
+            JsonNode closePrices = root.get("c");
+
+            if (timestamps == null || closePrices == null || !timestamps.isArray() || !closePrices.isArray()
+                    || timestamps.size() == 0 || closePrices.size() == 0) {
+                throw new RuntimeException("Khong tim thay du lieu gia cho ma " + normalizedSymbol);
+            }
+
+            int lastIndex = timestamps.size() - 1;
+            BigDecimal closePrice = closePrices.get(lastIndex).decimalValue().multiply(PRICE_MULTIPLIER);
+            BigDecimal openPrice = readScaledDecimal(root.get("o"), lastIndex);
+            Long volume = readLong(root.get("v"), lastIndex);
+            LocalDate tradeDate = Instant.ofEpochSecond(timestamps.get(lastIndex).asLong())
+                    .atZone(VIETNAM_ZONE)
+                    .toLocalDate();
+
+            return StockPriceResponse.builder()
+                    .symbol(normalizedSymbol)
+                    .price(closePrice)
+                    .openPrice(openPrice)
+                    .volume(volume)
+                    .tradeDate(tradeDate)
+                    .marketOpen(isVietnamMarketOpen())
+                    .build();
+        } catch (RuntimeException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new RuntimeException("Loi qua trinh lay du lieu gia: " + e.getMessage(), e);
+        }
+    }
+
+    private String normalizeSymbol(String symbol) {
+        if (symbol == null || symbol.isBlank()) {
+            throw new RuntimeException("Ma co phieu khong duoc de trong");
+        }
+        return symbol.trim().toUpperCase();
+    }
+
+    private BigDecimal readScaledDecimal(JsonNode node, int index) {
+        if (node == null || !node.isArray() || node.size() <= index || node.get(index).isNull()) {
+            return null;
+        }
+        return node.get(index).decimalValue().multiply(PRICE_MULTIPLIER);
+    }
+
+    private Long readLong(JsonNode node, int index) {
+        if (node == null || !node.isArray() || node.size() <= index || node.get(index).isNull()) {
+            return null;
+        }
+        return node.get(index).asLong();
+    }
+
+    private boolean isVietnamMarketOpen() {
+        DayOfWeek day = LocalDate.now(VIETNAM_ZONE).getDayOfWeek();
+        if (day == DayOfWeek.SATURDAY || day == DayOfWeek.SUNDAY) {
+            return false;
+        }
+
+        LocalTime now = LocalTime.now(VIETNAM_ZONE);
+        boolean morningSession = !now.isBefore(LocalTime.of(9, 0)) && now.isBefore(LocalTime.of(11, 30));
+        boolean afternoonSession = !now.isBefore(LocalTime.of(13, 0)) && now.isBefore(LocalTime.of(15, 0));
+        return morningSession || afternoonSession;
     }
 }

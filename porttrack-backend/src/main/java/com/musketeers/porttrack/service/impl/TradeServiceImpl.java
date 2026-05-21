@@ -2,6 +2,7 @@ package com.musketeers.porttrack.service.impl;
 
 import com.musketeers.porttrack.dto.request.TradeRequest;
 import com.musketeers.porttrack.dto.response.RoomDashboardResponse;
+import com.musketeers.porttrack.dto.response.StockPriceResponse;
 import com.musketeers.porttrack.entity.*;
 import com.musketeers.porttrack.entity.enums.TradeAction;
 import com.musketeers.porttrack.repository.*;
@@ -58,7 +59,12 @@ public class TradeServiceImpl implements TradeService {
         Portfolio portfolio = portfolioRepository.findByUserIdAndRoomId(currentUser.getId(), roomId)
                 .orElseThrow(() -> new RuntimeException("Bạn chưa tham gia phòng chơi này"));
 
-        BigDecimal currentPrice = stockPriceService.getCurrentPrice(request.getStockSymbol());
+        StockPriceResponse quote = stockPriceService.getLatestQuote(request.getStockSymbol());
+        if (!quote.isMarketOpen()) {
+            throw new RuntimeException("Khong the dat lenh vi thi truong dang dong phien");
+        }
+
+        BigDecimal currentPrice = quote.getPrice();
         BigDecimal quantity = new BigDecimal(request.getQuantity());
         BigDecimal tradeValue = currentPrice.multiply(quantity);
 

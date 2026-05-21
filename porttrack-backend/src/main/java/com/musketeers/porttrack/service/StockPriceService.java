@@ -1,5 +1,7 @@
 package com.musketeers.porttrack.service;
 
+import com.musketeers.porttrack.dto.response.StockPriceResponse;
+
 import java.math.BigDecimal;
 
 public interface StockPriceService {
@@ -10,4 +12,6 @@ public interface StockPriceService {
      * @return Giá trị hiện tại
      */
     BigDecimal getCurrentPrice(String symbol);
+
+    StockPriceResponse getLatestQuote(String symbol);
 }

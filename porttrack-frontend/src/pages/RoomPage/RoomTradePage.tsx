@@ -1,158 +1,273 @@
-import React, { useState, useEffect } from 'react';
-import { Search, TrendingUp, TrendingDown, Info, AlertCircle, Zap } from 'lucide-react';
+import React, { useState } from 'react';
+import { useOutletContext } from 'react-router-dom';
+import { Search, Zap, Info, ArrowUpRight, ArrowDownRight, AlertCircle, CheckCircle2, Loader2 } from 'lucide-react';
+import { roomService, type RoomDashboardData, type StockPriceData } from '../../services/roomService';
+
+interface RoomContext {
+  dashboard: RoomDashboardData | null;
+  currentCashBalance: number | null;
+  roomId: number;
+}
 
 export const RoomTradePage: React.FC = () => {
+  const { dashboard, currentCashBalance, roomId } = useOutletContext<RoomContext>();
   const [symbol, setSymbol] = useState('');
-  const [tradeMode, setTradeMode] = useState<'BUY' | 'SELL'>('BUY');
+  const [mode, setMode] = useState<'BUY' | 'SELL'>('BUY');
   const [quantity, setQuantity] = useState<number>(0);
-  const [price, setPrice] = useState<number>(0); // Giá fetch được từ Stock API
-  
-  // Mock dữ liệu từ Portfolio và Room Rules
-  const userCash = 85450000;
-  const availableStockInPortfolio = 500; // Giả sử đang có 500 cổ phiếu này
-  const transactionFeeRate = 0.0015; // 0.15%
-  const taxRate = 0.001; // 0.1%
+  const [quote, setQuote] = useState<StockPriceData | null>(null);
+  const [isSearching, setIsSearching] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [message, setMessage] = useState('');
+  const [error, setError] = useState('');
 
-  // Giả lập fetch giá khi nhập mã chứng khoán
-  useEffect(() => {
-    if (symbol.length >= 3) {
-      // Sau này gọi API: getStockPrice(symbol)
-      setPrice(Math.floor(Math.random() * (150000 - 10000) + 10000));
-    } else {
-      setPrice(0);
-    }
-  }, [symbol]);
-
-  // Tính toán các thông số
-  const maxBuy = price > 0 ? Math.floor(userCash / (price * (1 + transactionFeeRate))) : 0;
-  const estValue = quantity * price;
-  const totalCost = tradeMode === 'BUY' 
-    ? estValue * (1 + transactionFeeRate) 
-    : estValue * (1 - transactionFeeRate - taxRate);
-
-  const formatVNĐ = (val: number) => new Intl.NumberFormat('vi-VN').format(val);
-
-  const handleTrade = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (quantity <= 0) return alert("Khối lượng phải lớn hơn 0");
-    if (tradeMode === 'BUY' && quantity > maxBuy) return alert("Vượt quá sức mua!");
-    if (tradeMode === 'SELL' && quantity > availableStockInPortfolio) return alert("Không đủ cổ phiếu để bán!");
-    
-    console.log("Gửi lệnh:", { symbol, tradeMode, quantity, totalCost });
-    // Gọi API: roomService.executeTrade(...)
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount || 0);
   };
 
-  return (
-    <div className="max-w-4xl mx-auto animate-in fade-in slide-in-from-bottom-4 duration-500">
-      <div className="mb-8">
-        <h1 className="text-3xl font-black text-white">Market Terminal</h1>
-        <p className="text-slate-400 font-medium font-serif italic">Thực thi lệnh mua bán chứng khoán thời gian thực.</p>
-      </div>
+  const formatNumber = (amount?: number | null) => {
+    if (amount === null || amount === undefined) return '--';
+    return new Intl.NumberFormat('vi-VN').format(amount);
+  };
 
-      <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
-        {/* KHỐI TRÁI: FORM ĐẶT LỆNH */}
-        <div className="lg:col-span-3 space-y-6">
-          <div className="bg-slate-900 border border-slate-800 rounded-3xl p-8 shadow-xl">
-            <form onSubmit={handleTrade} className="space-y-6">
-              {/* Tìm kiếm mã */}
-              <div className="relative">
-                <label className="block text-xs font-bold text-slate-500 uppercase mb-2 tracking-widest">Stock Symbol</label>
-                <div className="relative">
-                  <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500" size={20} />
-                  <input 
-                    type="text" 
-                    placeholder="Nhập mã chứng khoán (VD: VND, FPT...)"
-                    className="w-full bg-slate-950 border border-slate-700 rounded-2xl py-4 pl-12 pr-4 text-xl font-black text-white uppercase focus:border-blue-500 focus:outline-none transition-all"
+  const handleSearch = async () => {
+    setMessage('');
+    setError('');
+    setQuote(null);
+    setQuantity(0);
+
+    const normalizedSymbol = symbol.trim().toUpperCase();
+    if (!normalizedSymbol) {
+      setError('Enter a stock symbol before searching.');
+      return;
+    }
+
+    try {
+      setIsSearching(true);
+      const result = await roomService.getStockPrice(normalizedSymbol);
+      setQuote(result);
+      setSymbol(result.symbol);
+    } catch (err) {
+      const apiError = err as { response?: { data?: { message?: string } } };
+      setError(apiError.response?.data?.message ?? 'Could not find price data for this stock.');
+    } finally {
+      setIsSearching(false);
+    }
+  };
+
+  const handleSubmit = async (event: React.FormEvent) => {
+    event.preventDefault();
+    setMessage('');
+    setError('');
+
+    if (!quote) {
+      setError('Search for the stock price before submitting an order.');
+      return;
+    }
+
+    if (!quote.marketOpen) {
+      setError('Trading is unavailable because the market session is closed.');
+      return;
+    }
+
+    if (quantity <= 0) {
+      setError('Enter a valid quantity before submitting.');
+      return;
+    }
+
+    try {
+      setIsSubmitting(true);
+      const result = await roomService.executeTrade(roomId, {
+        stockSymbol: quote.symbol,
+        action: mode,
+        quantity,
+      });
+      setMessage(result);
+      setQuantity(0);
+    } catch (err) {
+      const apiError = err as { response?: { data?: { message?: string } } };
+      setError(apiError.response?.data?.message ?? 'Trade request failed.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const isPlayer = currentCashBalance !== null;
+  const marketOpen = quote?.marketOpen ?? false;
+  const canTrade = isPlayer && !!quote && marketOpen;
+  const estimatedValue = quote ? quote.price * quantity : 0;
+
+  return (
+    <div className="max-w-6xl mx-auto animate-in fade-in slide-in-from-bottom-4 duration-700">
+      <header className="mb-10">
+        <h1 className="text-4xl font-black text-white tracking-tight">Market Terminal</h1>
+        <p className="text-slate-400 mt-2 font-medium">
+          {dashboard?.name ? `Trading in ${dashboard.name}` : 'Search a stock symbol before placing an order.'}
+        </p>
+      </header>
+
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+        <div className="lg:col-span-7 bg-slate-800/40 border border-slate-700/60 p-8 rounded-[2rem] backdrop-blur-sm shadow-xl">
+          {!isPlayer && (
+            <div className="mb-6 flex gap-3 rounded-2xl border border-amber-500/30 bg-amber-500/10 p-4 text-sm text-amber-100">
+              <AlertCircle className="mt-0.5 shrink-0 text-amber-400" size={18} />
+              <p>This account is viewing the room as owner. Trading requires joining the room as a player.</p>
+            </div>
+          )}
+
+          {quote && !marketOpen && (
+            <div className="mb-6 flex gap-3 rounded-2xl border border-slate-500/30 bg-slate-500/10 p-4 text-sm text-slate-200">
+              <AlertCircle className="mt-0.5 shrink-0 text-slate-300" size={18} />
+              <p>Market session is closed. Buy and sell orders are unavailable.</p>
+            </div>
+          )}
+
+          {message && (
+            <div className="mb-6 flex gap-3 rounded-2xl border border-emerald-500/30 bg-emerald-500/10 p-4 text-sm text-emerald-100">
+              <CheckCircle2 className="mt-0.5 shrink-0 text-emerald-400" size={18} />
+              <p>{message}</p>
+            </div>
+          )}
+
+          {error && (
+            <div className="mb-6 flex gap-3 rounded-2xl border border-rose-500/30 bg-rose-500/10 p-4 text-sm text-rose-100">
+              <AlertCircle className="mt-0.5 shrink-0 text-rose-400" size={18} />
+              <p>{error}</p>
+            </div>
+          )}
+
+          <form className="space-y-8" onSubmit={handleSubmit}>
+            <div className="space-y-3">
+              <label className="text-[11px] font-black text-slate-500 uppercase tracking-widest ml-1">Stock Symbol</label>
+              <div className="flex gap-3">
+                <div className="relative group flex-1">
+                  <Search className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-blue-500 transition-colors" size={22} />
+                  <input
+                    type="text"
+                    className="w-full bg-slate-950/80 border-2 border-slate-700 rounded-2xl py-5 pl-14 pr-6 text-2xl font-black text-white uppercase focus:border-blue-500 focus:outline-none transition-all shadow-inner placeholder:text-slate-700"
+                    placeholder="E.G. VND, FPT..."
                     value={symbol}
-                    onChange={(e) => setSymbol(e.target.value.toUpperCase())}
+                    onChange={(event) => {
+                      setSymbol(event.target.value.toUpperCase());
+                      setQuote(null);
+                      setQuantity(0);
+                    }}
                   />
                 </div>
-              </div>
-
-              {/* Nút Chế độ */}
-              <div className="flex gap-4">
-                <button 
+                <button
                   type="button"
-                  onClick={() => setTradeMode('BUY')}
-                  className={`flex-1 py-4 rounded-2xl font-black transition-all border-2 flex items-center justify-center gap-2 ${tradeMode === 'BUY' ? 'bg-emerald-600 border-emerald-400 text-white shadow-lg shadow-emerald-600/20' : 'bg-slate-950 border-slate-800 text-slate-500'}`}
+                  onClick={handleSearch}
+                  disabled={isSearching || !symbol.trim()}
+                  className="px-6 rounded-2xl bg-blue-600 hover:bg-blue-500 text-white font-black uppercase tracking-widest text-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                 >
-                  <TrendingUp size={20} /> BUY
+                  {isSearching ? <Loader2 size={18} className="animate-spin" /> : <Search size={18} />}
+                  Search
                 </button>
-                <button 
-                  type="button"
-                  onClick={() => setTradeMode('SELL')}
-                  className={`flex-1 py-4 rounded-2xl font-black transition-all border-2 flex items-center justify-center gap-2 ${tradeMode === 'SELL' ? 'bg-rose-600 border-rose-400 text-white shadow-lg shadow-rose-600/20' : 'bg-slate-950 border-slate-800 text-slate-500'}`}
-                >
-                  <TrendingDown size={20} /> SELL
-                </button>
-              </div>
-
-              {/* Nhập khối lượng */}
-              <div>
-                <div className="flex justify-between items-end mb-2">
-                  <label className="text-xs font-bold text-slate-500 uppercase tracking-widest">Quantity</label>
-                  <span className="text-xs font-bold text-blue-400 cursor-pointer hover:underline" onClick={() => setQuantity(tradeMode === 'BUY' ? maxBuy : availableStockInPortfolio)}>
-                    {tradeMode === 'BUY' ? `Sức mua tối đa: ${formatVNĐ(maxBuy)}` : `Có sẵn: ${formatVNĐ(availableStockInPortfolio)}`}
-                  </span>
-                </div>
-                <input 
-                  type="number" 
-                  className="w-full bg-slate-950 border border-slate-700 rounded-2xl py-4 px-6 text-2xl font-mono font-bold text-white focus:border-blue-500 focus:outline-none"
-                  value={quantity || ''}
-                  onChange={(e) => setQuantity(parseInt(e.target.value))}
-                />
-              </div>
-
-              {/* Submit */}
-              <button 
-                type="submit"
-                disabled={!price || quantity <= 0}
-                className="w-full py-5 rounded-2xl bg-blue-600 hover:bg-blue-500 text-white font-black text-lg transition-all shadow-xl shadow-blue-600/20 disabled:opacity-50 disabled:grayscale uppercase tracking-widest flex items-center justify-center gap-3"
-              >
-                <Zap size={22} className="fill-white" /> Khớp Lệnh Ngay
-              </button>
-            </form>
-          </div>
-        </div>
-
-        {/* KHỐI PHẢI: THÔNG TIN CHI TIẾT & TỔNG KẾT */}
-        <div className="lg:col-span-2 space-y-6">
-          <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6">
-            <h3 className="text-sm font-bold text-slate-400 uppercase tracking-widest mb-6 flex items-center gap-2">
-              <Info size={16} className="text-blue-500" /> Order Summary
-            </h3>
-            
-            <div className="space-y-4">
-              <div className="flex justify-between">
-                <span className="text-slate-500">Current Price</span>
-                <span className="font-bold text-white font-mono">{price > 0 ? `${formatVNĐ(price)} đ` : '---'}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-slate-500">Subtotal</span>
-                <span className="font-bold text-white font-mono">{formatVNĐ(estValue)} đ</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-slate-500">Trading Fee (0.15%)</span>
-                <span className="font-bold text-rose-400 font-mono">+{formatVNĐ(estValue * transactionFeeRate)} đ</span>
-              </div>
-              {tradeMode === 'SELL' && (
-                 <div className="flex justify-between">
-                   <span className="text-slate-500">Tax (0.1%)</span>
-                   <span className="font-bold text-rose-400 font-mono">+{formatVNĐ(estValue * taxRate)} đ</span>
-                 </div>
-              )}
-              <div className="pt-4 border-t border-slate-800 flex justify-between items-end">
-                <span className="text-slate-200 font-bold uppercase text-xs">Total Est. Value</span>
-                <span className="text-2xl font-black text-blue-500 font-mono">{formatVNĐ(totalCost)} đ</span>
               </div>
             </div>
-          </div>
 
-          <div className="p-5 rounded-3xl bg-amber-500/5 border border-amber-500/20 flex gap-4">
-             <AlertCircle className="text-amber-500 shrink-0" size={20} />
-             <p className="text-xs text-amber-200/70 leading-relaxed">
-               Lưu ý: Mọi giao dịch tại PortTrack là giả lập. Bạn đang sử dụng tiền ảo và dữ liệu thị trường thực tế để rèn luyện kỹ năng.
-             </p>
+            <div className="flex gap-4 p-1.5 bg-slate-950/50 rounded-2xl border border-slate-800">
+              <button
+                type="button"
+                disabled={!canTrade}
+                onClick={() => setMode('BUY')}
+                className={`flex-1 py-4 rounded-xl flex items-center justify-center gap-2 font-black text-sm tracking-wider transition-all disabled:cursor-not-allowed ${mode === 'BUY' && canTrade ? 'bg-emerald-600 text-white shadow-[0_0_20px_rgba(5,150,105,0.4)]' : canTrade ? 'text-slate-500 hover:text-slate-300' : 'text-slate-600 bg-slate-900/60'}`}
+              >
+                <ArrowUpRight size={18} strokeWidth={3} />
+                {quote && !marketOpen ? 'CLOSED SESSION' : 'BUY ORDER'}
+              </button>
+              <button
+                type="button"
+                disabled={!canTrade}
+                onClick={() => setMode('SELL')}
+                className={`flex-1 py-4 rounded-xl flex items-center justify-center gap-2 font-black text-sm tracking-wider transition-all disabled:cursor-not-allowed ${mode === 'SELL' && canTrade ? 'bg-rose-600 text-white shadow-[0_0_20px_rgba(225,29,72,0.4)]' : canTrade ? 'text-slate-500 hover:text-slate-300' : 'text-slate-600 bg-slate-900/60'}`}
+              >
+                <ArrowDownRight size={18} strokeWidth={3} />
+                {quote && !marketOpen ? 'CLOSED SESSION' : 'SELL ORDER'}
+              </button>
+            </div>
+
+            <div className="space-y-3">
+              <label className="text-[11px] font-black text-slate-500 uppercase tracking-widest ml-1">Quantity</label>
+              <input
+                type="number"
+                min={1}
+                disabled={!canTrade}
+                className="w-full bg-slate-950/80 border-2 border-slate-700 rounded-2xl py-5 px-6 text-3xl font-mono font-black text-white focus:border-blue-500 focus:outline-none transition-all shadow-inner disabled:opacity-50 disabled:cursor-not-allowed"
+                value={quantity || ''}
+                onChange={(event) => setQuantity(Math.max(0, parseInt(event.target.value) || 0))}
+              />
+            </div>
+
+            <button
+              disabled={!canTrade || isSubmitting || quantity <= 0}
+              className={`w-full py-6 rounded-2xl font-black text-lg uppercase tracking-widest transition-all flex items-center justify-center gap-3 border-2 ${!canTrade || isSubmitting || quantity <= 0 ? 'bg-slate-900 border-slate-800 text-slate-600 grayscale cursor-not-allowed' : mode === 'BUY' ? 'bg-emerald-600 border-emerald-500 text-white hover:bg-emerald-500 shadow-[0_0_30px_rgba(5,150,105,0.4)] hover:-translate-y-1' : 'bg-rose-600 border-rose-500 text-white hover:bg-rose-500 shadow-[0_0_30px_rgba(225,29,72,0.4)] hover:-translate-y-1'}`}
+            >
+              <Zap size={22} className={canTrade ? 'fill-white' : 'fill-transparent'} />
+              {isSubmitting ? 'Submitting...' : quote && !marketOpen ? 'Market Closed' : 'Confirm Order'}
+            </button>
+          </form>
+        </div>
+
+        <div className="lg:col-span-5 space-y-6">
+          <div className="bg-slate-900 border border-slate-800 rounded-[2rem] p-8 shadow-2xl relative overflow-hidden">
+            <div className={`absolute -top-20 -right-20 w-40 h-40 blur-[80px] rounded-full pointer-events-none transition-colors duration-500 ${mode === 'BUY' ? 'bg-emerald-500/20' : 'bg-rose-500/20'}`}></div>
+
+            <div className="flex items-center gap-2 mb-8 relative z-10">
+              <Info size={18} className={mode === 'BUY' ? 'text-emerald-500' : 'text-rose-500'} />
+              <h3 className="text-xs font-black text-white uppercase tracking-widest">Stock Quote</h3>
+            </div>
+
+            <div className="space-y-5 relative z-10">
+              <div className="flex justify-between items-center p-3 rounded-xl bg-slate-950/50 border border-slate-800/50">
+                <span className="text-xs font-bold text-slate-500 uppercase tracking-widest">Current Price</span>
+                <span className="text-lg font-mono font-black text-white">
+                  {quote ? formatCurrency(quote.price) : '--'}
+                </span>
+              </div>
+
+              <div className="px-1 space-y-4">
+                <div className="flex justify-between items-center">
+                  <span className="text-xs font-bold text-slate-500 uppercase">Symbol</span>
+                  <span className="text-sm font-mono font-bold text-slate-300">{quote?.symbol ?? '--'}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-xs font-bold text-slate-500 uppercase">Open Price</span>
+                  <span className="text-sm font-mono font-bold text-slate-300">{quote?.openPrice ? formatCurrency(quote.openPrice) : '--'}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-xs font-bold text-slate-500 uppercase">Volume</span>
+                  <span className="text-sm font-mono font-bold text-slate-300">{formatNumber(quote?.volume)}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-xs font-bold text-slate-500 uppercase">Trade Date</span>
+                  <span className="text-sm font-mono font-bold text-slate-300">
+                    {quote?.tradeDate ? new Date(quote.tradeDate).toLocaleDateString('vi-VN') : '--'}
+                  </span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-xs font-bold text-slate-500 uppercase">Market Session</span>
+                  <span className={`text-sm font-black ${quote?.marketOpen ? 'text-emerald-400' : 'text-rose-400'}`}>
+                    {quote ? (quote.marketOpen ? 'Open' : 'Closed') : '--'}
+                  </span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-xs font-bold text-slate-500 uppercase">Estimated Value</span>
+                  <span className="text-sm font-mono font-bold text-slate-300">{formatCurrency(estimatedValue)}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-xs font-bold text-slate-500 uppercase">Available Cash</span>
+                  <span className="text-sm font-mono font-bold text-slate-300">
+                    {currentCashBalance === null ? 'Owner view' : formatCurrency(currentCashBalance)}
+                  </span>
+                </div>
+              </div>
+
+              <div className="pt-6 mt-4 border-t border-slate-800">
+                <p className="text-xs leading-relaxed text-slate-400">
+                  Prices are fetched from DNSE chart data. Orders are enabled only during Vietnam market sessions.
+                </p>
+              </div>
+            </div>
           </div>
         </div>
       </div>

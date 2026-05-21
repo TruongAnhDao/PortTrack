@@ -116,6 +116,8 @@ public class RoomServiceImpl implements RoomService {
                 .build();
         portfolioRepository.save(portfolio);
 
+        System.out.println("Current user: " + currentUser.getUsername() + " id=" + currentUser.getId());
+
         return mapToRoomResponse(room);
     }
 

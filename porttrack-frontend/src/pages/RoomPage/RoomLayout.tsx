@@ -1,105 +1,112 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Link, Outlet, useLocation, useParams } from 'react-router-dom';
 import { Header } from '../../components/layout/Header';
-import { 
-  Home, 
-  Briefcase, 
-  ArrowLeftRight, 
-  History, 
-  Wallet, 
-  BarChart3 
-} from 'lucide-react';
+import { LayoutDashboard, ArrowLeftRight, Briefcase, History, ChevronLeft, ReceiptText } from 'lucide-react';
+import { roomService, type RoomDashboardData } from '../../services/roomService';
 
 export const RoomLayout: React.FC = () => {
   const { roomId } = useParams();
   const location = useLocation();
-  
-  // Mock data tài chính (Sau này sẽ fetch từ API dựa trên roomId)
-  const [roomInfo] = useState({
-    name: "K65 Đầu tư Chứng khoán - Group A",
-    cash: 85450000,
-    totalAssets: 112300000
-  });
+  const numericRoomId = Number(roomId);
+  const [dashboard, setDashboard] = useState<RoomDashboardData | null>(null);
+  const [currentCashBalance, setCurrentCashBalance] = useState<number | null>(null);
+  const [error, setError] = useState('');
 
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount);
-  };
+  useEffect(() => {
+    if (!numericRoomId) return;
 
-  const navItems = [
-    { name: 'Home', path: `/room/${roomId}`, icon: <Home size={20} /> },
-    { name: 'Portfolio', path: `/room/${roomId}/portfolio`, icon: <Briefcase size={20} /> },
-    { name: 'Trade', path: `/room/${roomId}/trade`, icon: <ArrowLeftRight size={20} /> },
-    { name: 'Summary', path: `/room/${roomId}/summary`, icon: <History size={20} /> },
+    let cancelled = false;
+
+    const loadRoomContext = async () => {
+      try {
+        setError('');
+        const [dashboardData, joinedRooms] = await Promise.all([
+          roomService.getRoomDashboard(numericRoomId),
+          roomService.getJoinedRooms().catch(() => []),
+        ]);
+
+        if (cancelled) return;
+
+        const joinedRoom = joinedRooms.find((item) => item.roomInfo.id === numericRoomId);
+        setDashboard(dashboardData);
+        setCurrentCashBalance(joinedRoom?.currentCashBalance ?? null);
+      } catch (err) {
+        if (!cancelled) {
+          console.error(err);
+          setError('Unable to load room data.');
+        }
+      }
+    };
+
+    loadRoomContext();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [numericRoomId]);
+
+  const roomStats = useMemo(() => {
+    if (!dashboard) return undefined;
+
+    const cash = currentCashBalance ?? dashboard.initialBalance;
+    return {
+      cash,
+      totalAssets: cash,
+    };
+  }, [currentCashBalance, dashboard]);
+
+  const menuItems = [
+    { name: 'Dashboard', path: `/room/${roomId}`, icon: <LayoutDashboard size={18} /> },
+    { name: 'My Portfolio', path: `/room/${roomId}/portfolio`, icon: <Briefcase size={18} /> },
+    { name: 'Trade Hub', path: `/room/${roomId}/trade`, icon: <ArrowLeftRight size={18} /> },
+    { name: 'Transaction History', path: `/room/${roomId}/transactions`, icon: <ReceiptText size={18} /> },
+    { name: 'Summary', path: `/room/${roomId}/summary`, icon: <History size={18} /> },
   ];
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-50 flex flex-col">
-      {/* 1. ROOM HEADER (Chứa thông tin tài chính real-time) */}
-      <div className="sticky top-0 z-40 w-full bg-slate-900 border-b border-slate-800 shadow-md">
-        <div className="max-w-[1600px] mx-auto px-6 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <Link to="/dashboard" className="p-2 hover:bg-slate-800 rounded-lg transition-colors text-slate-400">
-               <History size={18} className="rotate-180" />
-            </Link>
-            <h2 className="text-lg font-bold text-white border-l border-slate-700 pl-4 uppercase tracking-tight">
-              {roomInfo.name}
-            </h2>
-          </div>
+    <div className="min-h-screen flex flex-col bg-slate-950 text-slate-50 relative overflow-hidden">
+      <Header roomStats={roomStats} />
 
-          <div className="flex items-center gap-8">
-            <div className="text-right">
-              <p className="text-[10px] text-slate-500 uppercase font-bold tracking-widest">Available Cash</p>
-              <p className="text-lg font-black text-emerald-400 font-mono leading-none">
-                {formatCurrency(roomInfo.cash)}
-              </p>
-            </div>
-            <div className="h-8 w-[1px] bg-slate-800"></div>
-            <div className="text-right">
-              <p className="text-[10px] text-slate-500 uppercase font-bold tracking-widest">Total Assets</p>
-              <p className="text-lg font-black text-blue-400 font-mono leading-none">
-                {formatCurrency(roomInfo.totalAssets)}
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
+      <div className="flex flex-1 pt-20 max-w-[1600px] mx-auto w-full relative z-10">
+        
+        {/* SIDEBAR (Trái) */}
+        <aside className="w-64 fixed left-0 top-20 bottom-0 border-r border-slate-800/60 p-6 hidden xl:block bg-slate-900/30 backdrop-blur-xl">
+          <Link to="/dashboard" className="flex items-center gap-2 text-slate-500 hover:text-blue-400 mb-10 transition-colors group w-fit">
+            <ChevronLeft size={16} className="group-hover:-translate-x-1 transition-transform" />
+            <span className="text-xs font-black uppercase tracking-widest">Back to Lobby</span>
+          </Link>
 
-      <div className="flex flex-1 max-w-[1600px] mx-auto w-full">
-        {/* 2. SIDEBAR (Trái) */}
-        <aside className="w-64 border-r border-slate-900 p-4 space-y-2 hidden md:block">
-          {navItems.map((item) => (
-            <Link
-              key={item.path}
-              to={item.path}
-              className={`flex items-center gap-3 px-4 py-3 rounded-xl font-bold transition-all ${
-                location.pathname === item.path 
-                ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/20' 
-                : 'text-slate-500 hover:text-slate-200 hover:bg-slate-900'
-              }`}
-            >
-              {item.icon}
-              {item.name}
-            </Link>
-          ))}
-          
-          <div className="pt-10">
-            <div className="p-4 rounded-2xl bg-slate-900/50 border border-slate-800">
-               <p className="text-xs text-slate-500 mb-2 font-bold uppercase">Quick Stats</p>
-               <div className="flex justify-between text-sm mb-1">
-                 <span className="text-slate-400">Day Change</span>
-                 <span className="text-emerald-400 font-bold">+2.4%</span>
-               </div>
-               <div className="flex justify-between text-sm">
-                 <span className="text-slate-400">Rank</span>
-                 <span className="text-amber-400 font-bold">#04</span>
-               </div>
-            </div>
-          </div>
+          <nav className="space-y-3">
+            {menuItems.map((item) => {
+              const isActive = location.pathname === item.path;
+              return (
+                <Link
+                  key={item.path}
+                  to={item.path}
+                  className={`flex items-center gap-4 px-5 py-4 rounded-2xl font-bold transition-all relative overflow-hidden group ${
+                    isActive 
+                    ? 'bg-blue-600 text-white shadow-premium' 
+                    : 'text-slate-500 hover:text-slate-200 hover:bg-slate-800/50'
+                  }`}
+                >
+                  {item.icon}
+                  <span className="text-sm tracking-wide">{item.name}</span>
+                  {isActive && <div className="absolute right-0 top-0 bottom-0 w-1.5 bg-cyan-400 rounded-l-full shadow-[0_0_10px_rgba(34,211,238,0.8)]"></div>}
+                </Link>
+              );
+            })}
+          </nav>
         </aside>
 
-        {/* 3. MAIN CONTENT (Nơi render Home/Trade/Portfolio) */}
-        <main className="flex-1 p-6 lg:p-8 overflow-y-auto">
-          <Outlet />
+        {/* MAIN CONTENT AREA */}
+        <main className="flex-1 xl:ml-64 p-6 lg:p-10 relative">
+          {error ? (
+            <div className="rounded-2xl border border-rose-500/30 bg-rose-500/10 p-6 text-rose-200">
+              {error}
+            </div>
+          ) : (
+            <Outlet context={{ dashboard, currentCashBalance, roomId: numericRoomId }} />
+          )}
         </main>
       </div>
     </div>

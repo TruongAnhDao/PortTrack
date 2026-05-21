@@ -1,13 +1,25 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import logo from '../../assets/logo.png';
-import { LogOut, ShieldCheck, TrendingUp, LogIn } from 'lucide-react';
+import { LogOut } from 'lucide-react';
 
-export const Header: React.FC = () => {
+interface HeaderProps {
+  roomStats?: {
+    cash: number;
+    totalAssets: number;
+  };
+}
+
+export const Header: React.FC<HeaderProps> = ({ roomStats }) => {
   const location = useLocation();
   const navigate = useNavigate();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [username, setUsername] = useState('');
+  const isInsideRoom = location.pathname.includes('/room/');
+
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat('vi-VN').format(amount) + ' đ';
+  };
 
   // Kiểm tra trạng thái đăng nhập mỗi khi component mount hoặc chuyển trang
   useEffect(() => {
@@ -30,6 +42,23 @@ export const Header: React.FC = () => {
 
   // Logic hiển thị Navigation Bar ở giữa tùy theo trang
   const renderNavigation = () => {
+    // Nếu đang ở trong Room -> Hiển thị thông số tài chính
+    if (isInsideRoom && roomStats) {
+      return (
+        <div className="hidden lg:flex items-center gap-8 bg-slate-900/50 px-6 py-2 rounded-2xl border border-slate-800 shadow-inner animate-in fade-in zoom-in duration-300">
+          <div className="flex flex-col items-end">
+            <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Available Cash</span>
+            <span className="text-sm font-mono font-black text-emerald-400">{formatCurrency(roomStats.cash)}</span>
+          </div>
+          <div className="h-6 w-[2px] bg-slate-800 rounded-full"></div>
+          <div className="flex flex-col items-start">
+            <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Net Asset Value</span>
+            <span className="text-sm font-mono font-black text-blue-400">{formatCurrency(roomStats.totalAssets)}</span>
+          </div>
+        </div>
+      );
+    }
+    
     // Nếu ở trang Landing Page (/) thì hiện mỏ neo cuộn trang
     if (location.pathname === '/') {
       return (
