@@ -5,9 +5,9 @@ import lombok.Data;
 
 @Data
 public class LoginRequest {
-    @NotBlank(message = "Username không được để trống")
+    @NotBlank(message = "Username is required")
     private String username;
 
-    @NotBlank(message = "Password không được để trống")
+    @NotBlank(message = "Password is required")
     private String password;
 }

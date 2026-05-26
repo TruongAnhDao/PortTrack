@@ -53,6 +53,51 @@ export interface StockPriceData {
   marketOpen: boolean;
 }
 
+export interface PortfolioHoldingData {
+  symbol: string;
+  quantity: number;
+  avgPrice: number;
+  marketPrice: number;
+  marketValue: number;
+  costValue: number;
+  unrealizedProfitLoss: number;
+  returnPercentage: number;
+  priceAvailable: boolean;
+}
+
+export interface PortfolioData {
+  initialBalance: number;
+  cashBalance: number;
+  holdingsValue: number;
+  totalPortfolioValue: number;
+  totalCostValue: number;
+  totalProfitLoss: number;
+  returnPercentage: number;
+  holdings: PortfolioHoldingData[];
+}
+
+export interface TransactionData {
+  id: number;
+  symbol: string;
+  type: 'BUY' | 'SELL';
+  quantity: number;
+  price: number;
+  fee: number;
+  tax: number;
+  totalAmount: number;
+  executedAt: string;
+}
+
+export interface SummaryData {
+  portfolio: PortfolioData;
+  totalTrades: number;
+  buyOrders: number;
+  sellOrders: number;
+  totalBuyValue: number;
+  totalSellValue: number;
+  recentTransactions: TransactionData[];
+}
+
 export const roomService = {
   getOwnedRooms: async (): Promise<RoomData[]> => {
     const response = await api.get<RoomData[]>('/api/rooms/owned');
@@ -80,44 +125,19 @@ export const roomService = {
   },
   getStockPrice: async (symbol: string): Promise<StockPriceData> => {
     const normalizedSymbol = symbol.trim().toUpperCase();
-    const toDate = Math.floor(Date.now() / 1000);
-    const fromDate = toDate - (3 * 24 * 60 * 60);
-    const url = `https://services.entrade.com.vn/chart-api/v2/ohlcs/stock?from=${fromDate}&to=${toDate}&symbol=${encodeURIComponent(normalizedSymbol)}&resolution=1`;
-
-    const response = await fetch(url);
-    if (!response.ok) {
-      throw new Error(`HTTP Error: ${response.status}`);
-    }
-
-    const result: { t?: number[]; c?: number[]; o?: number[]; v?: number[] } = await response.json();
-    if (!result.t?.length || !result.c?.length) {
-      throw new Error(`No price data found for ${normalizedSymbol}.`);
-    }
-
-    const lastIndex = result.t.length - 1;
-    return {
-      symbol: normalizedSymbol,
-      price: result.c[lastIndex] * 1000,
-      openPrice: result.o?.[lastIndex] === undefined ? null : result.o[lastIndex] * 1000,
-      volume: result.v?.[lastIndex] ?? null,
-      tradeDate: new Date(result.t[lastIndex] * 1000).toISOString(),
-      marketOpen: isVietnamMarketOpen(),
-    };
+    const response = await api.get<StockPriceData>(`/api/stocks/${encodeURIComponent(normalizedSymbol)}/price`);
+    return response.data;
+  },
+  getPortfolio: async (roomId: number): Promise<PortfolioData> => {
+    const response = await api.get<PortfolioData>(`/api/rooms/${roomId}/portfolio`);
+    return response.data;
+  },
+  getTransactions: async (roomId: number): Promise<TransactionData[]> => {
+    const response = await api.get<TransactionData[]>(`/api/rooms/${roomId}/transactions`);
+    return response.data;
+  },
+  getSummary: async (roomId: number): Promise<SummaryData> => {
+    const response = await api.get<SummaryData>(`/api/rooms/${roomId}/summary`);
+    return response.data;
   },
 };
-
-function isVietnamMarketOpen() {
-  const now = new Date();
-  const vietnamTime = new Date(now.toLocaleString('en-US', { timeZone: 'Asia/Ho_Chi_Minh' }));
-  const day = vietnamTime.getDay();
-  if (day === 0 || day === 6) return false;
-
-  const minutes = vietnamTime.getHours() * 60 + vietnamTime.getMinutes();
-  const morningOpen = 9 * 60;
-  const morningClose = 11 * 60 + 30;
-  const afternoonOpen = 13 * 60;
-  const afternoonClose = 15 * 60;
-
-  return (minutes >= morningOpen && minutes < morningClose)
-    || (minutes >= afternoonOpen && minutes < afternoonClose);
-}

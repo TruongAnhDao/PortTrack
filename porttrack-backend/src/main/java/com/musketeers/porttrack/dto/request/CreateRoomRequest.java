@@ -11,16 +11,16 @@ import java.time.LocalDateTime;
 
 @Data
 public class CreateRoomRequest {
-    @NotBlank(message = "Tên phòng không được để trống")
+    @NotBlank(message = "Room name is required")
     private String name;
 
-    @NotNull(message = "Loại phòng không hợp lệ")
+    @NotNull(message = "Room type is required")
     private RoomType type;
 
-    private String password; // Chỉ dùng khi type = PRIVATE
+    private String password;
 
-    @NotNull(message = "Số dư khởi tạo không được để trống")
-    @DecimalMin(value = "0.0", inclusive = false, message = "Số dư khởi tạo phải lớn hơn 0")
+    @NotNull(message = "Initial balance is required")
+    @DecimalMin(value = "0.0", inclusive = false, message = "Initial balance must be greater than 0")
     private BigDecimal initialBalance;
 
     private LocalDateTime startTime;

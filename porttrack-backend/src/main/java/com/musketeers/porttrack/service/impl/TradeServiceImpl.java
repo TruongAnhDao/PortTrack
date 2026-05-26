@@ -92,7 +92,7 @@ public class TradeServiceImpl implements TradeService {
             BigDecimal oldQuantity = new BigDecimal(item.getQuantity());
             BigDecimal oldAvgPrice = item.getAvgPrice();
 
-            // FIX: Giá vốn mới phải gánh cả phí giao dịch (chuẩn kế toán)
+            // FIX: Giá vốn mới phải gánh cả phí giao dịch
             BigDecimal totalOldValue = oldQuantity.multiply(oldAvgPrice);
             BigDecimal newQuantity = oldQuantity.add(quantity);
             BigDecimal newAvgPrice = totalOldValue.add(totalRequired).divide(newQuantity, 2, RoundingMode.HALF_UP);

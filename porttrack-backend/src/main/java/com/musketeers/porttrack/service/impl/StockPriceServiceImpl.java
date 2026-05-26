@@ -1,11 +1,11 @@
 package com.musketeers.porttrack.service.impl;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.musketeers.porttrack.dto.response.StockPriceResponse;
 import com.musketeers.porttrack.service.StockPriceService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
 
 import java.math.BigDecimal;
 import java.net.URI;

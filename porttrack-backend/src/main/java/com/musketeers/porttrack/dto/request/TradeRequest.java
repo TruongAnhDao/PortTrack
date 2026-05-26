@@ -8,13 +8,13 @@ import lombok.Data;
 
 @Data
 public class TradeRequest {
-    @NotBlank(message = "Mã cổ phiếu không được để trống")
+    @NotBlank(message = "Stock symbol is required")
     private String stockSymbol;
 
-    @NotNull(message = "Hành động giao dịch không hợp lệ")
+    @NotNull(message = "Trade action is required")
     private TradeAction action;
 
-    @NotNull(message = "Số lượng không được để trống")
-    @Min(value = 1, message = "Số lượng giao dịch tối thiểu là 1")
-    private Long quantity; // FIX: Đổi từ Integer sang Long
+    @NotNull(message = "Quantity is required")
+    @Min(value = 1, message = "Trade quantity must be at least 1")
+    private Long quantity;
 }

@@ -5,8 +5,8 @@ import lombok.Data;
 
 @Data
 public class JoinRoomRequest {
-    @NotBlank(message = "Mã phòng (Code) không được để trống")
+    @NotBlank(message = "Room code is required")
     private String code;
-    
+
     private String password;
 }
