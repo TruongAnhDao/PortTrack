@@ -98,6 +98,67 @@ export interface SummaryData {
   recentTransactions: TransactionData[];
 }
 
+export interface OwnerRoomDashboardData {
+  room: RoomData;
+  playerCount: number;
+  totalTrades: number;
+  totalPortfolioValue: number;
+  averagePortfolioValue: number;
+  topPortfolioValue: number;
+}
+
+export interface OwnerPlayerData {
+  userId: number;
+  username: string;
+  portfolioId: number;
+  cashBalance: number;
+  holdingsValue: number;
+  totalPortfolioValue: number;
+  totalProfitLoss: number;
+  returnPercentage: number;
+  holdingCount: number;
+  totalTrades: number;
+  joinedAt: string;
+}
+
+export interface OwnerLeaderboardEntryData {
+  rank: number;
+  userId: number;
+  username: string;
+  portfolioId: number;
+  cashBalance: number;
+  holdingsValue: number;
+  totalPortfolioValue: number;
+  totalProfitLoss: number;
+  returnPercentage: number;
+  totalTrades: number;
+}
+
+export interface OwnerTransactionData {
+  id: number;
+  portfolioId: number;
+  userId: number;
+  username: string;
+  symbol: string;
+  type: 'BUY' | 'SELL';
+  quantity: number;
+  price: number;
+  fee: number;
+  tax: number;
+  totalAmount: number;
+  executedAt: string;
+}
+
+export interface UpdateOwnerRoomData {
+  name?: string;
+  type?: 'PUBLIC' | 'PRIVATE';
+  password?: string;
+  initialBalance?: number;
+  status?: 'WAITING' | 'RUNNING' | 'FINISHED';
+  startTime?: string;
+  endTime?: string;
+}
+
 export const roomService = {
   getOwnedRooms: async (): Promise<RoomData[]> => {
     const response = await api.get<RoomData[]>('/api/rooms/owned');
@@ -138,6 +199,26 @@ export const roomService = {
   },
   getSummary: async (roomId: number): Promise<SummaryData> => {
     const response = await api.get<SummaryData>(`/api/rooms/${roomId}/summary`);
+    return response.data;
+  },
+  getOwnerDashboard: async (roomId: number): Promise<OwnerRoomDashboardData> => {
+    const response = await api.get<OwnerRoomDashboardData>(`/api/owner/rooms/${roomId}/dashboard`);
+    return response.data;
+  },
+  getOwnerPlayers: async (roomId: number): Promise<OwnerPlayerData[]> => {
+    const response = await api.get<OwnerPlayerData[]>(`/api/owner/rooms/${roomId}/players`);
+    return response.data;
+  },
+  getOwnerTransactions: async (roomId: number): Promise<OwnerTransactionData[]> => {
+    const response = await api.get<OwnerTransactionData[]>(`/api/owner/rooms/${roomId}/transactions`);
+    return response.data;
+  },
+  getOwnerLeaderboard: async (roomId: number): Promise<OwnerLeaderboardEntryData[]> => {
+    const response = await api.get<OwnerLeaderboardEntryData[]>(`/api/owner/rooms/${roomId}/leaderboard`);
+    return response.data;
+  },
+  updateOwnerRoom: async (roomId: number, data: UpdateOwnerRoomData): Promise<RoomData> => {
+    const response = await api.patch<RoomData>(`/api/owner/rooms/${roomId}`, data);
     return response.data;
   },
 };

@@ -135,7 +135,7 @@ export const DashboardPage: React.FC = () => {
                   key={room.id}
                   room={room}
                   variant={activeTab}
-                  onActionClick={(id) => navigate(activeTab === 'managed' ? `/room/${id}` : `/room/${id}/trade`)}
+                  onActionClick={(id) => navigate(activeTab === 'managed' ? `/owner/rooms/${id}` : `/room/${id}/trade`)}
                 />
               ))
             )}

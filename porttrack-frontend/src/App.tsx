@@ -9,6 +9,11 @@ import { RoomTradePage } from './pages/RoomPage/RoomTradePage';
 import { PortfolioPage } from './pages/RoomPage/PortfolioPage';
 import { SummaryPage } from './pages/RoomPage/SummaryPage';
 import { TransactionHistoryPage } from './pages/RoomPage/TransactionHistoryPage';
+import { OwnerRoomLayout } from './pages/OwnerRoomPage/OwnerRoomLayout';
+import { OwnerDashboardPage } from './pages/OwnerRoomPage/OwnerDashboardPage';
+import { OwnerPlayersPage } from './pages/OwnerRoomPage/OwnerPlayersPage';
+import { OwnerTransactionsPage } from './pages/OwnerRoomPage/OwnerTransactionsPage';
+import { OwnerLeaderboardPage } from './pages/OwnerRoomPage/OwnerLeaderboardPage';
 import './App.css';
 
 function App() {
@@ -25,6 +30,12 @@ function App() {
           <Route path="trade" element={<RoomTradePage />} />
           <Route path="transactions" element={<TransactionHistoryPage />} />
           <Route path="summary" element={<SummaryPage />} />
+        </Route>
+        <Route path="/owner/rooms/:roomId" element={<OwnerRoomLayout />}>
+          <Route index element={<OwnerDashboardPage />} />
+          <Route path="players" element={<OwnerPlayersPage />} />
+          <Route path="transactions" element={<OwnerTransactionsPage />} />
+          <Route path="leaderboard" element={<OwnerLeaderboardPage />} />
         </Route>
       </Routes>
     </Router>
