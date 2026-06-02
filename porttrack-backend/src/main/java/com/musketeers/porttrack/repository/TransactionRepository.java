@@ -9,4 +9,10 @@ import java.util.List;
 @Repository
 public interface TransactionRepository extends JpaRepository<Transaction, Long> {
     List<Transaction> findByPortfolioIdOrderByExecutedAtDesc(Long portfolioId);
+
+    List<Transaction> findByPortfolioRoomIdOrderByExecutedAtDesc(Long roomId);
+
+    long countByPortfolioId(Long portfolioId);
+
+    long countByPortfolioRoomId(Long roomId);
 }

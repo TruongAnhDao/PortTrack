@@ -18,4 +18,8 @@ public interface PortfolioRepository extends JpaRepository<Portfolio, Long> {
 
     // Dùng để lấy ví tiền/danh mục của user trong 1 phòng cụ thể khi giao dịch (TradeServiceImpl dùng)
     Optional<Portfolio> findByUserIdAndRoomId(Long userId, Long roomId);
+
+    List<Portfolio> findByRoomIdOrderByJoinedAtAsc(Long roomId);
+
+    long countByRoomId(Long roomId);
 }
