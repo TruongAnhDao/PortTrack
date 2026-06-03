@@ -9,7 +9,13 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "transactions")
+@Table(
+        name = "transactions",
+        indexes = {
+                @Index(name = "idx_transactions_symbol", columnList = "symbol"),
+                @Index(name = "idx_transactions_executed_at", columnList = "executed_at")
+        }
+)
 @Getter
 @Setter
 @NoArgsConstructor
@@ -42,10 +48,10 @@ public class Transaction {
     @Column(name = "price", nullable = false, precision = 20, scale = 2)
     private BigDecimal price;
 
-    @Column(name = "fee", nullable = false, precision = 20, scale = 2)
+    @Column(name = "fee", precision = 20, scale = 2)
     private BigDecimal fee;
 
-    @Column(name = "tax", nullable = false, precision = 20, scale = 2)
+    @Column(name = "tax", precision = 20, scale = 2)
     private BigDecimal tax;
 
     @Column(name = "total_amount", nullable = false, precision = 20, scale = 2)

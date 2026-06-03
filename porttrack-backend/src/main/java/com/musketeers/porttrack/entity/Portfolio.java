@@ -8,7 +8,10 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "portfolios")
+@Table(
+        name = "portfolios",
+        uniqueConstraints = @UniqueConstraint(name = "uq_user_room", columnNames = {"user_id", "room_id"})
+)
 @Getter
 @Setter
 @NoArgsConstructor
@@ -35,7 +38,7 @@ public class Portfolio {
 
     @Version
     @Column(name = "version")
-    private Long version;
+    private Integer version;
 
     @CreationTimestamp
     @Column(name = "joined_at", updatable = false)

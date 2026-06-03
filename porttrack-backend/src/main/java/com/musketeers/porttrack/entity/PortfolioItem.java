@@ -2,11 +2,17 @@ package com.musketeers.porttrack.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.UpdateTimestamp;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "portfolio_items")
+@Table(
+        name = "portfolio_items",
+        uniqueConstraints = @UniqueConstraint(name = "uq_portfolio_symbol", columnNames = {"portfolio_id", "symbol"}),
+        indexes = @Index(name = "idx_portfolio_items_symbol", columnList = "symbol")
+)
 @Getter
 @Setter
 @NoArgsConstructor
@@ -37,5 +43,9 @@ public class PortfolioItem {
 
     @Version
     @Column(name = "version")
-    private Long version;
+    private Integer version;
+
+    @UpdateTimestamp
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt;
 }

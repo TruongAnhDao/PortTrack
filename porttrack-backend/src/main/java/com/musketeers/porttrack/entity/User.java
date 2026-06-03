@@ -20,10 +20,10 @@ public class User {
     @Column(name = "id")
     private Long id;
 
-    @Column(name = "username", nullable = false, unique = true)
+    @Column(name = "username", nullable = false, unique = true, length = 100)
     private String username;
 
-    @Column(name = "password_hash", nullable = false)
+    @Column(name = "password_hash", nullable = false, length = 255)
     private String passwordHash;
 
     @CreationTimestamp

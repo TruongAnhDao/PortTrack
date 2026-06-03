@@ -23,23 +23,23 @@ public class Room {
     @Column(name = "id")
     private Long id;
 
-    @Column(name = "name", nullable = false)
+    @Column(name = "name", nullable = false, length = 255)
     private String name;
 
-    @Column(name = "code", nullable = false, unique = true, length = 10)
+    @Column(name = "code", nullable = false, unique = true, length = 50)
     private String code;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "type", nullable = false)
     private RoomType type;
 
-    @Column(name = "password")
+    @Column(name = "password", length = 255)
     private String password;
 
     @Column(name = "owner_id", nullable = false)
     private Long ownerId;
 
-    @Column(name = "initial_balance", nullable = false)
+    @Column(name = "initial_balance", nullable = false, precision = 20, scale = 2)
     private BigDecimal initialBalance;
 
     @Enumerated(EnumType.STRING)
@@ -47,10 +47,10 @@ public class Room {
     @Builder.Default
     private RoomStatus status = RoomStatus.WAITING;
 
-    @Column(name = "start_time")
+    @Column(name = "start_time", nullable = false)
     private LocalDateTime startTime;
 
-    @Column(name = "end_time")
+    @Column(name = "end_time", nullable = false)
     private LocalDateTime endTime;
 
     @CreationTimestamp
