@@ -142,7 +142,7 @@ export const TransactionHistoryPage: React.FC = () => {
             <thead>
               <tr className="border-b border-slate-700/80 text-xs uppercase tracking-widest text-slate-500">
                 <th className="py-4 pr-4">Date</th>
-                <th className="py-4 pr-4">Ticker</th>
+                <th className="py-4 pr-4">Stock</th>
                 <th className="py-4 pr-4">Type</th>
                 <th className="py-4 pr-4 text-right">Quantity</th>
                 <th className="py-4 pr-4 text-right">Price</th>

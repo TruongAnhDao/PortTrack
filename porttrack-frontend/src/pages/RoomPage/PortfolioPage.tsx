@@ -117,7 +117,7 @@ export const PortfolioPage: React.FC = () => {
           <table className="w-full min-w-[900px] text-left">
             <thead>
               <tr className="border-b border-slate-700/80 text-xs uppercase tracking-widest text-slate-500">
-                <th className="py-4 pr-4">Ticker</th>
+                <th className="py-4 pr-4">Stock</th>
                 <th className="py-4 pr-4 text-right">Quantity</th>
                 <th className="py-4 pr-4 text-right">Avg Cost</th>
                 <th className="py-4 pr-4 text-right">Market Price</th>
