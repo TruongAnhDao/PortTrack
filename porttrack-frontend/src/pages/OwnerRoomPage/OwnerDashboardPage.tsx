@@ -28,15 +28,19 @@ export const OwnerDashboardPage: React.FC = () => {
 
   useEffect(() => {
     if (!dashboard) return;
-    setForm({
-      name: dashboard.room.name,
-      type: dashboard.room.type,
-      password: '',
-      initialBalance: String(dashboard.room.initialBalance),
-      status: dashboard.room.status,
-      startTime: toDateTimeInput(dashboard.room.startTime),
-      endTime: toDateTimeInput(dashboard.room.endTime),
-    });
+    const syncForm = window.setTimeout(() => {
+      setForm({
+        name: dashboard.room.name,
+        type: dashboard.room.type,
+        password: '',
+        initialBalance: String(dashboard.room.initialBalance),
+        status: dashboard.room.status,
+        startTime: toDateTimeInput(dashboard.room.startTime),
+        endTime: toDateTimeInput(dashboard.room.endTime),
+      });
+    }, 0);
+
+    return () => window.clearTimeout(syncForm);
   }, [dashboard]);
 
   const room = dashboard?.room;

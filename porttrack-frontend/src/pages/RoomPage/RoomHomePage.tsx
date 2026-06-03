@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useOutletContext } from 'react-router-dom';
 import { Timer, ScrollText, BookOpen, ChevronRight, AlertTriangle } from 'lucide-react';
 import type { RoomDashboardData } from '../../services/roomService';
@@ -21,6 +21,7 @@ const translateLegacyGuideText = (item: string) => {
 
 export const RoomHomePage: React.FC = () => {
   const { dashboard, currentCashBalance } = useOutletContext<RoomContext>();
+  const [now, setNow] = useState(() => Date.now());
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount || 0);
@@ -29,7 +30,7 @@ export const RoomHomePage: React.FC = () => {
   const getTimeRemaining = () => {
     if (!dashboard?.endTime) return null;
 
-    const remainingMs = new Date(dashboard.endTime).getTime() - Date.now();
+    const remainingMs = new Date(dashboard.endTime).getTime() - now;
     if (remainingMs <= 0) return { days: 0, hours: 0, minutes: 0 };
 
     const totalMinutes = Math.floor(remainingMs / 60000);
@@ -39,6 +40,14 @@ export const RoomHomePage: React.FC = () => {
       minutes: totalMinutes % 60,
     };
   };
+
+  useEffect(() => {
+    const intervalId = window.setInterval(() => {
+      setNow(Date.now());
+    }, 60000);
+
+    return () => window.clearInterval(intervalId);
+  }, []);
 
   const remaining = getTimeRemaining();
   const guideItems = dashboard?.guideText

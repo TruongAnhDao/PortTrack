@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { authService } from '../../services/authService';
 import logo from '../../assets/logo.png';
 import { UserPlus } from 'lucide-react';
+import { getApiErrorMessage } from '../../utils/apiError';
 
 export const RegisterPage: React.FC = () => {
   const [username, setUsername] = useState('');
@@ -28,13 +29,13 @@ export const RegisterPage: React.FC = () => {
       
       // Auto login sau khi đăng ký thành công
       const data = await authService.login({ username, password });
-      const token = data.accessToken || data.token || data;
+      const token = typeof data === 'string' ? data : data.accessToken || data.token || '';
       
       localStorage.setItem('token', token);
       localStorage.setItem('username', username);
       navigate('/dashboard');
-    } catch (err: any) {
-      setError(err.response?.data?.message || 'Registration failed. The username may already exist.');
+    } catch (err: unknown) {
+      setError(getApiErrorMessage(err, 'Registration failed. The username may already exist.'));
     } finally {
       setIsLoading(false);
     }

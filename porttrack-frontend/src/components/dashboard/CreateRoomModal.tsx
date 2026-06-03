@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { X, PlusCircle, AlertCircle } from 'lucide-react';
 import { roomService, type CreateRoomData } from '../../services/roomService';
+import { getApiErrorMessage } from '../../utils/apiError';
 
 interface Props { isOpen: boolean; onClose: () => void; onSuccess: () => void; }
 
@@ -20,8 +21,8 @@ export const CreateRoomModal: React.FC<Props> = ({ isOpen, onClose, onSuccess })
       await roomService.createRoom(formData);
       onSuccess();
       onClose();
-    } catch (err: any) {
-      setError(err.response?.data?.message || 'Failed to create room. Please try again.');
+    } catch (err: unknown) {
+      setError(getApiErrorMessage(err, 'Failed to create room. Please try again.'));
     } finally {
       setLoading(false);
     }
@@ -46,7 +47,7 @@ export const CreateRoomModal: React.FC<Props> = ({ isOpen, onClose, onSuccess })
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-slate-300 mb-1">Room Type</label>
-              <select className="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-2.5 text-white focus:border-blue-500 focus:outline-none" value={formData.type} onChange={e => setFormData({...formData, type: e.target.value as any})}>
+              <select className="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-2.5 text-white focus:border-blue-500 focus:outline-none" value={formData.type} onChange={e => setFormData({...formData, type: e.target.value as CreateRoomData['type']})}>
                 <option value="PUBLIC">Public</option>
                 <option value="PRIVATE">Private</option>
               </select>

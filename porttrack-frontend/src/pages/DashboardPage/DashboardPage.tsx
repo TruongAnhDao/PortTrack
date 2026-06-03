@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Plus, KeyRound, ShieldCheck, TrendingUp, Loader2 } from 'lucide-react';
 import { roomService, type RoomCardData } from '../../services/roomService';
@@ -17,7 +17,7 @@ export const DashboardPage: React.FC = () => {
 
   const [counts, setCounts] = useState({ managed: 0, joined: 0 });
 
-  const fetchRooms = async () => {
+  const fetchRooms = useCallback(async () => {
     setIsLoading(true);
     try {
       if (activeTab === 'managed') {
@@ -42,9 +42,15 @@ export const DashboardPage: React.FC = () => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [activeTab]);
 
-  useEffect(() => { fetchRooms(); }, [activeTab]);
+  useEffect(() => {
+    const loadRooms = window.setTimeout(() => {
+      void fetchRooms();
+    }, 0);
+
+    return () => window.clearTimeout(loadRooms);
+  }, [fetchRooms]);
 
   return (
     <div className="min-h-screen flex flex-col text-slate-50 relative overflow-hidden bg-slate-950">

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import logo from '../../assets/logo.png';
 import { LogOut } from 'lucide-react';
@@ -13,30 +13,17 @@ interface HeaderProps {
 export const Header: React.FC<HeaderProps> = ({ roomStats }) => {
   const location = useLocation();
   const navigate = useNavigate();
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [username, setUsername] = useState('');
+  const isLoggedIn = Boolean(localStorage.getItem('token'));
+  const username = localStorage.getItem('username') || 'Trader';
   const isInsideRoom = location.pathname.includes('/room/');
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-US').format(amount) + ' VND';
   };
 
-  // Kiểm tra trạng thái đăng nhập mỗi khi component mount hoặc chuyển trang
-  useEffect(() => {
-    const token = localStorage.getItem('token');
-    const storedUser = localStorage.getItem('username');
-    if (token) {
-      setIsLoggedIn(true);
-      setUsername(storedUser || 'Trader');
-    } else {
-      setIsLoggedIn(false);
-    }
-  }, [location]);
-
   const handleLogout = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('username');
-    setIsLoggedIn(false);
     navigate('/');
   };
 

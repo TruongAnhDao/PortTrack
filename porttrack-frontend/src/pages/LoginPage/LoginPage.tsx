@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { authService } from '../../services/authService';
 import logo from '../../assets/logo.png';
 import { LogIn } from 'lucide-react';
+import { getApiErrorMessage } from '../../utils/apiError';
 
 export const LoginPage: React.FC = () => {
   const [username, setUsername] = useState('');
@@ -19,14 +20,14 @@ export const LoginPage: React.FC = () => {
     try {
       const data = await authService.login({ username, password });
       // Giả sử backend trả về object có chứa token (tùy format DTO của bạn)
-      const token = data.accessToken || data.token || data; 
+      const token = typeof data === 'string' ? data : data.accessToken || data.token || ''; 
       
       localStorage.setItem('token', token);
       localStorage.setItem('username', username);
       
       navigate('/dashboard');
-    } catch (err: any) {
-      setError(err.response?.data?.message || 'Login failed. Please check your credentials.');
+    } catch (err: unknown) {
+      setError(getApiErrorMessage(err, 'Login failed. Please check your credentials.'));
     } finally {
       setIsLoading(false);
     }
