@@ -68,7 +68,7 @@ public class StockPriceServiceImpl implements StockPriceService {
 
             if (timestamps == null || closePrices == null || !timestamps.isArray() || !closePrices.isArray()
                     || timestamps.size() == 0 || closePrices.size() == 0) {
-                throw new RuntimeException("Khong tim thay du lieu gia cho ma " + normalizedSymbol);
+                throw new RuntimeException("No price data found for symbol " + normalizedSymbol);
             }
 
             int lastIndex = timestamps.size() - 1;
@@ -90,13 +90,13 @@ public class StockPriceServiceImpl implements StockPriceService {
         } catch (RuntimeException e) {
             throw e;
         } catch (Exception e) {
-            throw new RuntimeException("Loi qua trinh lay du lieu gia: " + e.getMessage(), e);
+            throw new RuntimeException("Failed to fetch price data: " + e.getMessage(), e);
         }
     }
 
     private String normalizeSymbol(String symbol) {
         if (symbol == null || symbol.isBlank()) {
-            throw new RuntimeException("Ma co phieu khong duoc de trong");
+            throw new RuntimeException("Stock symbol is required.");
         }
         return symbol.trim().toUpperCase();
     }

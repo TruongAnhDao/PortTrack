@@ -34,20 +34,20 @@ public class TradeServiceImpl implements TradeService {
     private User getCurrentUser() {
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
         return userRepository.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("Không tìm thấy người dùng xác thực"));
+                .orElseThrow(() -> new RuntimeException("Authenticated user not found."));
     }
 
     @Override
     public RoomDashboardResponse getRoomDashboard(Long roomId) {
         Room room = roomRepository.findById(roomId)
-                .orElseThrow(() -> new RuntimeException("Phòng chơi không tồn tại"));
+                .orElseThrow(() -> new RuntimeException("Room does not exist."));
 
         return RoomDashboardResponse.builder()
                 .name(room.getName())
                 .initialBalance(room.getInitialBalance())
                 .startTime(room.getStartTime())
                 .endTime(room.getEndTime())
-                .guideText("1. Giao dịch T+0. \n2. Phí giao dịch 0.15%. \n3. Thuế bán 0.1%. \n4. Thanh khoản ngay lập tức.")
+                .guideText("1. T+0 trading.\n2. Trading fee: 0.15%.\n3. Sell tax: 0.1%.\n4. Instant liquidity.")
                 .build();
     }
 
@@ -57,11 +57,11 @@ public class TradeServiceImpl implements TradeService {
         User currentUser = getCurrentUser();
 
         Portfolio portfolio = portfolioRepository.findByUserIdAndRoomId(currentUser.getId(), roomId)
-                .orElseThrow(() -> new RuntimeException("Bạn chưa tham gia phòng chơi này"));
+                .orElseThrow(() -> new RuntimeException("You have not joined this room."));
 
         StockPriceResponse quote = stockPriceService.getLatestQuote(request.getStockSymbol());
         if (!quote.isMarketOpen()) {
-            throw new RuntimeException("Khong the dat lenh vi thi truong dang dong phien");
+            throw new RuntimeException("Orders cannot be placed because the market is closed.");
         }
 
         BigDecimal currentPrice = quote.getPrice();
@@ -80,7 +80,7 @@ public class TradeServiceImpl implements TradeService {
         BigDecimal totalRequired = tradeValue.add(fee);
 
         if (portfolio.getCashBalance().compareTo(totalRequired) < 0) {
-            throw new RuntimeException("Số dư không đủ. Tổng tiền cần: " + totalRequired + ", Sức mua: " + portfolio.getCashBalance());
+            throw new RuntimeException("Insufficient balance. Required amount: " + totalRequired + ", buying power: " + portfolio.getCashBalance());
         }
 
         portfolio.setCashBalance(portfolio.getCashBalance().subtract(totalRequired));
@@ -117,11 +117,11 @@ public class TradeServiceImpl implements TradeService {
 
     private void handleSellOrder(Portfolio portfolio, String symbol, BigDecimal price, BigDecimal quantity, BigDecimal tradeValue) {
         PortfolioItem item = portfolioItemRepository.findByPortfolioIdAndSymbol(portfolio.getId(), symbol)
-                .orElseThrow(() -> new RuntimeException("Bạn không sở hữu mã cổ phiếu " + symbol));
+                .orElseThrow(() -> new RuntimeException("You do not own stock symbol " + symbol));
 
         // FIX: So sánh chuẩn Long
         if (item.getQuantity() < quantity.longValue()) {
-            throw new RuntimeException("Số lượng cổ phiếu không đủ để bán. Đang có: " + item.getQuantity());
+            throw new RuntimeException("Not enough shares to sell. Available: " + item.getQuantity());
         }
 
         BigDecimal fee = tradeValue.multiply(TRADING_FEE_RATE);

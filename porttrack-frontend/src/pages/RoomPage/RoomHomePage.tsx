@@ -8,6 +8,17 @@ interface RoomContext {
   currentCashBalance: number | null;
 }
 
+const translateLegacyGuideText = (item: string) => {
+  const normalized = item.replace(/^\d+\.\s*/, '').trim().toLowerCase();
+
+  if (normalized.includes('giao dịch t+0')) return '1. T+0 trading.';
+  if (normalized.includes('phí giao dịch')) return '2. Trading fee: 0.15%.';
+  if (normalized.includes('thuế bán')) return '3. Sell tax: 0.1%.';
+  if (normalized.includes('thanh khoản')) return '4. Instant liquidity.';
+
+  return item;
+};
+
 export const RoomHomePage: React.FC = () => {
   const { dashboard, currentCashBalance } = useOutletContext<RoomContext>();
 
@@ -33,6 +44,7 @@ export const RoomHomePage: React.FC = () => {
   const guideItems = dashboard?.guideText
     ?.split(/\n+/)
     .map((item) => item.trim())
+    .map(translateLegacyGuideText)
     .filter(Boolean) ?? [];
 
   return (

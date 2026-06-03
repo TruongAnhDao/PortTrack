@@ -28,6 +28,6 @@ public class TradeController {
             @Valid @RequestBody TradeRequest request) {
         
         tradeService.executeTrade(roomId, request);
-        return ResponseEntity.ok("Giao dịch " + request.getAction() + " mã " + request.getStockSymbol() + " thành công!");
+        return ResponseEntity.ok(request.getAction() + " order for " + request.getStockSymbol() + " completed successfully.");
     }
 }

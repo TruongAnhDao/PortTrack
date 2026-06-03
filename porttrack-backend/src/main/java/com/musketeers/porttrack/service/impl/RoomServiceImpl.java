@@ -33,7 +33,7 @@ public class RoomServiceImpl implements RoomService {
     private User getCurrentUser() {
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
         return userRepository.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("Không tìm thấy thông tin người dùng xác thực"));
+                .orElseThrow(() -> new RuntimeException("Authenticated user not found."));
     }
 
     private String generateUniqueRoomCode() {
@@ -70,7 +70,7 @@ public class RoomServiceImpl implements RoomService {
         User currentUser = getCurrentUser();
 
         if (request.getType() == RoomType.PRIVATE && (request.getPassword() == null || request.getPassword().isBlank())) {
-            throw new RuntimeException("Phòng PRIVATE yêu cầu phải có mật khẩu");
+            throw new RuntimeException("Private rooms require a password.");
         }
 
         // CHỈ LƯU ROOM, KHÔNG TẠO PORTFOLIO CHO OWNER (Theo logic mới)
@@ -94,19 +94,19 @@ public class RoomServiceImpl implements RoomService {
     public RoomResponse joinRoom(JoinRoomRequest request) {
         User currentUser = getCurrentUser();
         Room room = roomRepository.findByCode(request.getCode())
-                .orElseThrow(() -> new RuntimeException("Không tìm thấy phòng"));
+                .orElseThrow(() -> new RuntimeException("Room not found."));
 
         // Player không được tham gia vào chính phòng mình tạo để chơi
         if (room.getOwnerId().equals(currentUser.getId())) {
-            throw new RuntimeException("Bạn là chủ phòng này, không thể tham gia với tư cách người chơi");
+            throw new RuntimeException("You are the owner of this room and cannot join as a player.");
         }
 
         if (room.getType() == RoomType.PRIVATE && !room.getPassword().equals(request.getPassword())) {
-            throw new RuntimeException("Mật khẩu không chính xác");
+            throw new RuntimeException("Incorrect password.");
         }
 
         if (portfolioRepository.existsByUserIdAndRoomId(currentUser.getId(), room.getId())) {
-            throw new RuntimeException("Bạn đã tham gia phòng này rồi");
+            throw new RuntimeException("You have already joined this room.");
         }
 
         Portfolio portfolio = Portfolio.builder()

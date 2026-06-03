@@ -18,7 +18,7 @@ export const Header: React.FC<HeaderProps> = ({ roomStats }) => {
   const isInsideRoom = location.pathname.includes('/room/');
 
   const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('vi-VN').format(amount) + ' đ';
+    return new Intl.NumberFormat('en-US').format(amount) + ' VND';
   };
 
   // Kiểm tra trạng thái đăng nhập mỗi khi component mount hoặc chuyển trang
@@ -83,7 +83,6 @@ export const Header: React.FC<HeaderProps> = ({ roomStats }) => {
   return (
     <header className="fixed top-0 left-0 w-full z-50 bg-slate-950/70 backdrop-blur-xl border-b border-slate-800/80 shadow-sm">
       <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
-        
         {/* KHỐI BÊN TRÁI: Logo + Nav */}
         <div className="flex items-center gap-10 lg:gap-16">
           <Link to="/" className="flex items-center gap-1 group">
@@ -138,7 +137,6 @@ export const Header: React.FC<HeaderProps> = ({ roomStats }) => {
             </div>
           )}
         </div>
-        
       </div>
     </header>
   );

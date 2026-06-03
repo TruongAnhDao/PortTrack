@@ -21,7 +21,7 @@ export const CreateRoomModal: React.FC<Props> = ({ isOpen, onClose, onSuccess })
       onSuccess();
       onClose();
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Lỗi khi tạo phòng. Vui lòng thử lại!');
+      setError(err.response?.data?.message || 'Failed to create room. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -52,7 +52,7 @@ export const CreateRoomModal: React.FC<Props> = ({ isOpen, onClose, onSuccess })
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium text-slate-300 mb-1">Initial Balance (VNĐ)</label>
+              <label className="block text-sm font-medium text-slate-300 mb-1">Initial Balance (VND)</label>
               <input required type="number" className="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-2.5 text-emerald-400 font-mono font-bold focus:border-blue-500 focus:outline-none" value={formData.initialBalance} onChange={e => setFormData({...formData, initialBalance: Number(e.target.value)})} />
             </div>
           </div>

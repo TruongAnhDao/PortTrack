@@ -17,7 +17,7 @@ export const RegisterPage: React.FC = () => {
     setError('');
 
     if (password !== confirmPassword) {
-      setError('Mật khẩu xác nhận không khớp!');
+      setError('Passwords do not match.');
       return;
     }
 
@@ -34,7 +34,7 @@ export const RegisterPage: React.FC = () => {
       localStorage.setItem('username', username);
       navigate('/dashboard');
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Đăng ký thất bại. Username có thể đã tồn tại.');
+      setError(err.response?.data?.message || 'Registration failed. The username may already exist.');
     } finally {
       setIsLoading(false);
     }

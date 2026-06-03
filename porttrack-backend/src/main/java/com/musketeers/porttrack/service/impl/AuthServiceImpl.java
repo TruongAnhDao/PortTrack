@@ -45,7 +45,7 @@ public class AuthServiceImpl implements AuthService {
     public AuthResponse register(RegisterRequest request) {
         // 1. Kiểm tra user tồn tại
         if (userRepository.existsByUsername(request.getUsername())) {
-            throw new RuntimeException("Tên đăng nhập đã tồn tại!");
+            throw new RuntimeException("Username already exists.");
         }
 
         // 2. Tạo đối tượng User và MÃ HÓA MẬT KHẨU

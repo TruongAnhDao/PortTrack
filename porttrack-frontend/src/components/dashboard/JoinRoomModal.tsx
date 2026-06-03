@@ -20,7 +20,7 @@ export const JoinRoomModal: React.FC<Props> = ({ isOpen, onClose, onSuccess }) =
       onSuccess();
       onClose();
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Mã phòng hoặc mật khẩu không chính xác!');
+      setError(err.response?.data?.message || 'Invalid room code or password.');
     } finally {
       setLoading(false);
     }
