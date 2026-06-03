@@ -11,7 +11,7 @@ const formatCurrency = (amount?: number | null) => {
 const formatPercent = (amount?: number | null) => `${(amount ?? 0).toFixed(2)}%`;
 
 export const OwnerLeaderboardPage: React.FC = () => {
-  const { roomId } = useOutletContext<OwnerRoomContext>();
+  const { roomId, ownerDataVersion } = useOutletContext<OwnerRoomContext>();
   const [entries, setEntries] = useState<OwnerLeaderboardEntryData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
@@ -38,7 +38,7 @@ export const OwnerLeaderboardPage: React.FC = () => {
     return () => {
       cancelled = true;
     };
-  }, [roomId]);
+  }, [ownerDataVersion, roomId]);
 
   const topEntries = entries.slice(0, 3);
   const tableEntries = entries.slice(3);

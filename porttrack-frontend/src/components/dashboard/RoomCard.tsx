@@ -25,6 +25,7 @@ export const RoomCard: React.FC<RoomCardProps> = ({ room, variant, onActionClick
   const moneyLabel = variant === 'managed'
     ? `${(room.initialBalance / 1000000).toFixed(0)}M`
     : formatCurrency(room.currentCashBalance ?? room.initialBalance).replace('₫', '').trim();
+  const playerCount = room.playerCount ?? (variant === 'joined' ? 1 : 0);
 
   return (
     <div className="bg-slate-800/80 backdrop-blur-md border border-slate-700/80 rounded-3xl p-6 hover:border-blue-500 transition-all hover:shadow-[0_0_40px_rgba(59,130,246,0.2)] flex flex-col h-full group relative overflow-hidden">
@@ -61,7 +62,7 @@ export const RoomCard: React.FC<RoomCardProps> = ({ room, variant, onActionClick
             <Users size={16} className="text-blue-400" />
             <span className="text-[11px] font-bold uppercase tracking-wider">Players</span>
           </div>
-          <p className="text-2xl font-black text-white">{variant === 'managed' ? '-' : '1'}</p>
+          <p className="text-2xl font-black text-white">{playerCount}</p>
         </div>
 
         <div className="bg-slate-950/80 p-4 rounded-2xl border border-slate-700/60 shadow-inner overflow-hidden">

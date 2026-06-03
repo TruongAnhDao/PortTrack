@@ -58,6 +58,7 @@ public class RoomServiceImpl implements RoomService {
                 .type(room.getType())
                 .ownerId(room.getOwnerId())
                 .initialBalance(room.getInitialBalance())
+                .playerCount(portfolioRepository.countByRoomId(room.getId()))
                 .status(room.getStatus())
                 .startTime(room.getStartTime())
                 .endTime(room.getEndTime())

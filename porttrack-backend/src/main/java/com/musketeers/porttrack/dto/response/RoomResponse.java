@@ -17,6 +17,7 @@ public class RoomResponse {
     private RoomType type;
     private Long ownerId;
     private BigDecimal initialBalance;
+    private Long playerCount;
     private RoomStatus status;
     private LocalDateTime startTime;
     private LocalDateTime endTime;

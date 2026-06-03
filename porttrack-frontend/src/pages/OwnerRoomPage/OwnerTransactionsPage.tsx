@@ -13,7 +13,7 @@ const formatDateTime = (value: string) => {
 };
 
 export const OwnerTransactionsPage: React.FC = () => {
-  const { roomId } = useOutletContext<OwnerRoomContext>();
+  const { roomId, ownerDataVersion } = useOutletContext<OwnerRoomContext>();
   const [transactions, setTransactions] = useState<OwnerTransactionData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
@@ -42,7 +42,7 @@ export const OwnerTransactionsPage: React.FC = () => {
     return () => {
       cancelled = true;
     };
-  }, [roomId]);
+  }, [ownerDataVersion, roomId]);
 
   const filteredTransactions = useMemo(() => {
     const normalizedQuery = query.trim().toLowerCase();

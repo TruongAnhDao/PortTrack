@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Link, Outlet, useLocation, useParams } from 'react-router-dom';
 import { Header } from '../../components/layout/Header';
 import { LayoutDashboard, ArrowLeftRight, Briefcase, History, ChevronLeft, ReceiptText } from 'lucide-react';
@@ -11,40 +11,84 @@ export const RoomLayout: React.FC = () => {
   const [dashboard, setDashboard] = useState<RoomDashboardData | null>(null);
   const [currentCashBalance, setCurrentCashBalance] = useState<number | null>(null);
   const [totalNav, setTotalNav] = useState<number | null>(null);
+  const [roomDataVersion, setRoomDataVersion] = useState(0);
+  const [isRoomRefreshing, setIsRoomRefreshing] = useState(false);
   const [error, setError] = useState('');
+  const isMountedRef = useRef(true);
+  const requestIdRef = useRef(0);
 
-  useEffect(() => {
+  const loadRoomContext = useCallback(async () => {
     if (!numericRoomId) return;
 
-    let cancelled = false;
+    const requestId = requestIdRef.current + 1;
+    requestIdRef.current = requestId;
 
-    const loadRoomContext = async () => {
-      try {
-        setError('');
-        const [dashboardData, portfolio] = await Promise.all([
-          roomService.getRoomDashboard(numericRoomId),
-          roomService.getPortfolio(numericRoomId),
-        ]);
+    try {
+      setIsRoomRefreshing(true);
+      setError('');
+      const [dashboardData, portfolio] = await Promise.all([
+        roomService.getRoomDashboard(numericRoomId),
+        roomService.getPortfolio(numericRoomId),
+      ]);
 
-        if (cancelled) return;
+      if (!isMountedRef.current || requestId !== requestIdRef.current) return;
 
-        setDashboard(dashboardData);
-        setCurrentCashBalance(portfolio.cashBalance);
-        setTotalNav(portfolio.totalPortfolioValue);
-      } catch (err) {
-        if (!cancelled) {
-          console.error(err);
-          setError('Unable to load room data.');
-        }
+      setDashboard(dashboardData);
+      setCurrentCashBalance(portfolio.cashBalance);
+      setTotalNav(portfolio.totalPortfolioValue);
+      setRoomDataVersion((version) => version + 1);
+    } catch (err) {
+      if (isMountedRef.current && requestId === requestIdRef.current) {
+        console.error(err);
+        setError('Unable to load room data.');
+      }
+    } finally {
+      if (isMountedRef.current && requestId === requestIdRef.current) {
+        setIsRoomRefreshing(false);
+      }
+    }
+  }, [numericRoomId]);
+
+  useEffect(() => {
+    isMountedRef.current = true;
+
+    return () => {
+      isMountedRef.current = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    const loadContext = window.setTimeout(() => {
+      void loadRoomContext();
+    }, 0);
+
+    return () => window.clearTimeout(loadContext);
+  }, [loadRoomContext]);
+
+  useEffect(() => {
+    if (!numericRoomId) return undefined;
+
+    const refreshOnFocus = () => {
+      if (document.visibilityState === 'visible') {
+        void loadRoomContext();
       }
     };
 
-    loadRoomContext();
+    const intervalId = window.setInterval(() => {
+      if (document.visibilityState === 'visible') {
+        void loadRoomContext();
+      }
+    }, 60_000);
+
+    document.addEventListener('visibilitychange', refreshOnFocus);
+    window.addEventListener('focus', refreshOnFocus);
 
     return () => {
-      cancelled = true;
+      window.clearInterval(intervalId);
+      document.removeEventListener('visibilitychange', refreshOnFocus);
+      window.removeEventListener('focus', refreshOnFocus);
     };
-  }, [numericRoomId]);
+  }, [loadRoomContext, numericRoomId]);
 
   const roomStats = useMemo(() => {
     if (!dashboard) return undefined;
@@ -106,7 +150,7 @@ export const RoomLayout: React.FC = () => {
               {error}
             </div>
           ) : (
-            <Outlet context={{ dashboard, currentCashBalance, roomId: numericRoomId }} />
+            <Outlet context={{ dashboard, currentCashBalance, roomId: numericRoomId, reloadRoomData: loadRoomContext, roomDataVersion, isRoomRefreshing }} />
           )}
         </main>
       </div>

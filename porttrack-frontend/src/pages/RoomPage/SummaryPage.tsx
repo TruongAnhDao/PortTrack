@@ -5,6 +5,7 @@ import { roomService, type PortfolioHoldingData, type SummaryData } from '../../
 
 interface RoomContext {
   roomId: number;
+  roomDataVersion: number;
 }
 
 const formatCurrency = (amount?: number | null) => {
@@ -76,7 +77,7 @@ function ReturnChart({ holdings }: { holdings: PortfolioHoldingData[] }) {
 }
 
 export const SummaryPage: React.FC = () => {
-  const { roomId } = useOutletContext<RoomContext>();
+  const { roomId, roomDataVersion } = useOutletContext<RoomContext>();
   const [summary, setSummary] = useState<SummaryData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
@@ -103,7 +104,7 @@ export const SummaryPage: React.FC = () => {
     return () => {
       cancelled = true;
     };
-  }, [roomId]);
+  }, [roomDataVersion, roomId]);
 
   const bestHolding = useMemo(() => {
     if (!summary?.portfolio.holdings.length) return undefined;

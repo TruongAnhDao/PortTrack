@@ -12,32 +12,33 @@ export const DashboardPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'managed' | 'joined'>('managed');
   const [rooms, setRooms] = useState<RoomCardData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState('');
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showJoinModal, setShowJoinModal] = useState(false);
 
   const [counts, setCounts] = useState({ managed: 0, joined: 0 });
 
-  const fetchRooms = useCallback(async () => {
+  const fetchRooms = useCallback(async (targetTab = activeTab) => {
     setIsLoading(true);
     try {
-      if (activeTab === 'managed') {
-        const data = await roomService.getOwnedRooms();
-        const roomList = Array.isArray(data) ? data : [];
-        setRooms(roomList);
-        setCounts(prev => ({ ...prev, managed: roomList.length }));
-      } else {
-        const data = await roomService.getJoinedRooms();
-        const roomList = Array.isArray(data)
-          ? data.map((joined) => ({
-              ...joined.roomInfo,
-              currentCashBalance: joined.currentCashBalance,
-            }))
-          : [];
-        setRooms(roomList);
-        setCounts(prev => ({ ...prev, joined: roomList.length }));
-      }
+      setLoadError('');
+      const [ownedData, joinedData] = await Promise.all([
+        roomService.getOwnedRooms(),
+        roomService.getJoinedRooms(),
+      ]);
+      const managedRooms = Array.isArray(ownedData) ? ownedData : [];
+      const joinedRooms = Array.isArray(joinedData)
+        ? joinedData.map((joined) => ({
+            ...joined.roomInfo,
+            currentCashBalance: joined.currentCashBalance,
+          }))
+        : [];
+
+      setCounts({ managed: managedRooms.length, joined: joinedRooms.length });
+      setRooms(targetTab === 'managed' ? managedRooms : joinedRooms);
     } catch (error) {
       console.error(error);
+      setLoadError('Unable to load rooms. Please refresh the page or try again later.');
       setRooms([]);
     } finally {
       setIsLoading(false);
@@ -46,11 +47,21 @@ export const DashboardPage: React.FC = () => {
 
   useEffect(() => {
     const loadRooms = window.setTimeout(() => {
-      void fetchRooms();
+      void fetchRooms(activeTab);
     }, 0);
 
     return () => window.clearTimeout(loadRooms);
-  }, [fetchRooms]);
+  }, [activeTab, fetchRooms]);
+
+  const refreshAfterCreate = async () => {
+    setActiveTab('managed');
+    await fetchRooms('managed');
+  };
+
+  const refreshAfterJoin = async () => {
+    setActiveTab('joined');
+    await fetchRooms('joined');
+  };
 
   return (
     <div className="min-h-screen flex flex-col text-slate-50 relative overflow-hidden bg-slate-950">
@@ -128,6 +139,10 @@ export const DashboardPage: React.FC = () => {
           <div className="flex justify-center items-center py-32">
              <Loader2 size={48} className="text-blue-500 animate-spin" />
           </div>
+        ) : loadError ? (
+          <div className="rounded-[2rem] border border-rose-500/30 bg-rose-500/10 p-8 text-center text-rose-100">
+            <p className="text-xl font-bold">{loadError}</p>
+          </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {rooms.length === 0 ? (
@@ -149,8 +164,8 @@ export const DashboardPage: React.FC = () => {
         )}
       </main>
 
-      <CreateRoomModal isOpen={showCreateModal} onClose={() => setShowCreateModal(false)} onSuccess={fetchRooms} />
-      <JoinRoomModal isOpen={showJoinModal} onClose={() => setShowJoinModal(false)} onSuccess={fetchRooms} />
+      <CreateRoomModal isOpen={showCreateModal} onClose={() => setShowCreateModal(false)} onSuccess={refreshAfterCreate} />
+      <JoinRoomModal isOpen={showJoinModal} onClose={() => setShowJoinModal(false)} onSuccess={refreshAfterJoin} />
     </div>
   );
 };

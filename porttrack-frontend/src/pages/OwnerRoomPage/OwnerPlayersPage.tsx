@@ -15,7 +15,7 @@ const formatDateTime = (value: string) => {
 };
 
 export const OwnerPlayersPage: React.FC = () => {
-  const { roomId } = useOutletContext<OwnerRoomContext>();
+  const { roomId, ownerDataVersion } = useOutletContext<OwnerRoomContext>();
   const [players, setPlayers] = useState<OwnerPlayerData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
@@ -43,7 +43,7 @@ export const OwnerPlayersPage: React.FC = () => {
     return () => {
       cancelled = true;
     };
-  }, [roomId]);
+  }, [ownerDataVersion, roomId]);
 
   const filteredPlayers = useMemo(() => {
     const normalizedQuery = query.trim().toLowerCase();

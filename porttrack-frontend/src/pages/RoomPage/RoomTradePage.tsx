@@ -7,10 +7,12 @@ interface RoomContext {
   dashboard: RoomDashboardData | null;
   currentCashBalance: number | null;
   roomId: number;
+  reloadRoomData: () => Promise<void>;
+  isRoomRefreshing: boolean;
 }
 
 export const RoomTradePage: React.FC = () => {
-  const { dashboard, currentCashBalance, roomId } = useOutletContext<RoomContext>();
+  const { dashboard, currentCashBalance, roomId, reloadRoomData, isRoomRefreshing } = useOutletContext<RoomContext>();
   const [symbol, setSymbol] = useState('');
   const [mode, setMode] = useState<'BUY' | 'SELL'>('BUY');
   const [quantity, setQuantity] = useState<number>(0);
@@ -81,6 +83,7 @@ export const RoomTradePage: React.FC = () => {
         action: mode,
         quantity,
       });
+      await reloadRoomData();
       setMessage(result);
       setQuantity(0);
     } catch (err) {
@@ -258,6 +261,7 @@ export const RoomTradePage: React.FC = () => {
                   <span className="text-xs font-bold text-slate-500 uppercase">Available Cash</span>
                   <span className="text-sm font-mono font-bold text-slate-300">
                     {currentCashBalance === null ? 'Owner view' : formatCurrency(currentCashBalance)}
+                    {isRoomRefreshing && <span className="ml-2 text-xs text-blue-300">Updating...</span>}
                   </span>
                 </div>
               </div>

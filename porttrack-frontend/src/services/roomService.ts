@@ -8,6 +8,7 @@ export interface RoomData {
   ownerId: number;
   status: 'WAITING' | 'RUNNING' | 'FINISHED';
   initialBalance: number;
+  playerCount?: number;
   startTime?: string;
   endTime?: string;
 }

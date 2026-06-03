@@ -5,6 +5,7 @@ import { roomService, type PortfolioData } from '../../services/roomService';
 
 interface RoomContext {
   roomId: number;
+  roomDataVersion: number;
 }
 
 const formatCurrency = (amount?: number | null) => {
@@ -14,7 +15,7 @@ const formatCurrency = (amount?: number | null) => {
 const formatPercent = (amount?: number | null) => `${(amount ?? 0).toFixed(2)}%`;
 
 export const PortfolioPage: React.FC = () => {
-  const { roomId } = useOutletContext<RoomContext>();
+  const { roomId, roomDataVersion } = useOutletContext<RoomContext>();
   const [portfolio, setPortfolio] = useState<PortfolioData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
@@ -41,7 +42,7 @@ export const PortfolioPage: React.FC = () => {
     return () => {
       cancelled = true;
     };
-  }, [roomId]);
+  }, [roomDataVersion, roomId]);
 
   const topHolding = useMemo(() => {
     if (!portfolio?.holdings.length) return undefined;

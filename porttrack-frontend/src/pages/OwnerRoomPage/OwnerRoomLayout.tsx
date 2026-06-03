@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Link, Outlet, useLocation, useParams } from 'react-router-dom';
 import { BarChart3, ChevronLeft, LayoutDashboard, Loader2, ReceiptText, Settings, Trophy, Users } from 'lucide-react';
 import { Header } from '../../components/layout/Header';
@@ -8,6 +8,7 @@ export interface OwnerRoomContext {
   roomId: number;
   dashboard: OwnerRoomDashboardData | null;
   reloadDashboard: () => Promise<void>;
+  ownerDataVersion: number;
 }
 
 export const OwnerRoomLayout: React.FC = () => {
@@ -16,37 +17,70 @@ export const OwnerRoomLayout: React.FC = () => {
   const numericRoomId = Number(roomId);
   const [dashboard, setDashboard] = useState<OwnerRoomDashboardData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [ownerDataVersion, setOwnerDataVersion] = useState(0);
   const [error, setError] = useState('');
+  const isMountedRef = useRef(true);
+  const requestIdRef = useRef(0);
 
   const loadDashboard = useCallback(async () => {
     if (!numericRoomId) return;
+    const requestId = requestIdRef.current + 1;
+    requestIdRef.current = requestId;
     const result = await roomService.getOwnerDashboard(numericRoomId);
+    if (!isMountedRef.current || requestId !== requestIdRef.current) return;
     setDashboard(result);
+    setOwnerDataVersion((version) => version + 1);
   }, [numericRoomId]);
 
   useEffect(() => {
-    let cancelled = false;
+    isMountedRef.current = true;
 
+    return () => {
+      isMountedRef.current = false;
+    };
+  }, []);
+
+  useEffect(() => {
     const load = async () => {
       try {
         setIsLoading(true);
         setError('');
-        const result = await roomService.getOwnerDashboard(numericRoomId);
-        if (!cancelled) setDashboard(result);
+        await loadDashboard();
       } catch (err) {
         const apiError = err as { response?: { data?: { message?: string } } };
-        if (!cancelled) setError(apiError.response?.data?.message ?? 'Unable to load owner room.');
+        if (isMountedRef.current) setError(apiError.response?.data?.message ?? 'Unable to load owner room.');
       } finally {
-        if (!cancelled) setIsLoading(false);
+        if (isMountedRef.current) setIsLoading(false);
       }
     };
 
-    load();
+    void load();
+  }, [loadDashboard]);
+
+  useEffect(() => {
+    if (!numericRoomId) return undefined;
+
+    const refreshOnFocus = () => {
+      if (document.visibilityState === 'visible') {
+        void loadDashboard().catch(console.error);
+      }
+    };
+
+    const intervalId = window.setInterval(() => {
+      if (document.visibilityState === 'visible') {
+        void loadDashboard().catch(console.error);
+      }
+    }, 60_000);
+
+    document.addEventListener('visibilitychange', refreshOnFocus);
+    window.addEventListener('focus', refreshOnFocus);
 
     return () => {
-      cancelled = true;
+      window.clearInterval(intervalId);
+      document.removeEventListener('visibilitychange', refreshOnFocus);
+      window.removeEventListener('focus', refreshOnFocus);
     };
-  }, [numericRoomId]);
+  }, [loadDashboard, numericRoomId]);
 
   const roomStats = useMemo(() => {
     if (!dashboard) return undefined;
@@ -122,7 +156,7 @@ export const OwnerRoomLayout: React.FC = () => {
               {error}
             </div>
           ) : (
-            <Outlet context={{ roomId: numericRoomId, dashboard, reloadDashboard: loadDashboard } satisfies OwnerRoomContext} />
+            <Outlet context={{ roomId: numericRoomId, dashboard, reloadDashboard: loadDashboard, ownerDataVersion } satisfies OwnerRoomContext} />
           )}
         </main>
       </div>

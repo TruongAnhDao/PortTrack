@@ -3,7 +3,7 @@ import { X, KeyRound, AlertCircle } from 'lucide-react';
 import { roomService } from '../../services/roomService';
 import { getApiErrorMessage } from '../../utils/apiError';
 
-interface Props { isOpen: boolean; onClose: () => void; onSuccess: () => void; }
+interface Props { isOpen: boolean; onClose: () => void; onSuccess: () => void | Promise<void>; }
 
 export const JoinRoomModal: React.FC<Props> = ({ isOpen, onClose, onSuccess }) => {
   const [code, setCode] = useState('');
@@ -18,7 +18,7 @@ export const JoinRoomModal: React.FC<Props> = ({ isOpen, onClose, onSuccess }) =
     setLoading(true); setError('');
     try {
       await roomService.joinRoom({ code, password });
-      onSuccess();
+      await onSuccess();
       onClose();
     } catch (err: unknown) {
       setError(getApiErrorMessage(err, 'Invalid room code or password.'));

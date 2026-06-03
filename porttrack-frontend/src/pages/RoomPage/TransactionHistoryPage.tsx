@@ -5,6 +5,7 @@ import { roomService, type TransactionData } from '../../services/roomService';
 
 interface RoomContext {
   roomId: number;
+  roomDataVersion: number;
 }
 
 const formatCurrency = (amount?: number | null) => {
@@ -19,7 +20,7 @@ const formatDateTime = (value: string) => {
 };
 
 export const TransactionHistoryPage: React.FC = () => {
-  const { roomId } = useOutletContext<RoomContext>();
+  const { roomId, roomDataVersion } = useOutletContext<RoomContext>();
   const [transactions, setTransactions] = useState<TransactionData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
@@ -48,7 +49,7 @@ export const TransactionHistoryPage: React.FC = () => {
     return () => {
       cancelled = true;
     };
-  }, [roomId]);
+  }, [roomDataVersion, roomId]);
 
   const filteredTransactions = useMemo(() => {
     const normalizedQuery = query.trim().toUpperCase();
