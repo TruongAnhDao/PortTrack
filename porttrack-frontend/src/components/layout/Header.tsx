@@ -39,7 +39,7 @@ export const Header: React.FC<HeaderProps> = ({ roomStats }) => {
           </div>
           <div className="h-6 w-[2px] bg-slate-800 rounded-full"></div>
           <div className="flex flex-col items-start">
-            <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Net Asset Value</span>
+            <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Total NAV</span>
             <span className="text-sm font-mono font-black text-blue-400">{formatCurrency(roomStats.totalAssets)}</span>
           </div>
         </div>

@@ -10,6 +10,7 @@ export const RoomLayout: React.FC = () => {
   const numericRoomId = Number(roomId);
   const [dashboard, setDashboard] = useState<RoomDashboardData | null>(null);
   const [currentCashBalance, setCurrentCashBalance] = useState<number | null>(null);
+  const [totalNav, setTotalNav] = useState<number | null>(null);
   const [error, setError] = useState('');
 
   useEffect(() => {
@@ -20,16 +21,16 @@ export const RoomLayout: React.FC = () => {
     const loadRoomContext = async () => {
       try {
         setError('');
-        const [dashboardData, joinedRooms] = await Promise.all([
+        const [dashboardData, portfolio] = await Promise.all([
           roomService.getRoomDashboard(numericRoomId),
-          roomService.getJoinedRooms().catch(() => []),
+          roomService.getPortfolio(numericRoomId),
         ]);
 
         if (cancelled) return;
 
-        const joinedRoom = joinedRooms.find((item) => item.roomInfo.id === numericRoomId);
         setDashboard(dashboardData);
-        setCurrentCashBalance(joinedRoom?.currentCashBalance ?? null);
+        setCurrentCashBalance(portfolio.cashBalance);
+        setTotalNav(portfolio.totalPortfolioValue);
       } catch (err) {
         if (!cancelled) {
           console.error(err);
@@ -51,9 +52,9 @@ export const RoomLayout: React.FC = () => {
     const cash = currentCashBalance ?? dashboard.initialBalance;
     return {
       cash,
-      totalAssets: cash,
+      totalAssets: totalNav ?? cash,
     };
-  }, [currentCashBalance, dashboard]);
+  }, [currentCashBalance, dashboard, totalNav]);
 
   const menuItems = [
     { name: 'Dashboard', path: `/room/${roomId}`, icon: <LayoutDashboard size={18} /> },
