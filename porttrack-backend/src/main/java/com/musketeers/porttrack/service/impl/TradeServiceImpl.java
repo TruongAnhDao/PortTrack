@@ -15,6 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.LocalDateTime;
 import java.util.Optional;
 
 @Service
@@ -30,6 +31,7 @@ public class TradeServiceImpl implements TradeService {
 
     private static final BigDecimal TRADING_FEE_RATE = new BigDecimal("0.0015");
     private static final BigDecimal SELLING_TAX_RATE = new BigDecimal("0.0010");
+    private static final int SETTLEMENT_DAYS = 2;
 
     private User getCurrentUser() {
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
@@ -47,7 +49,7 @@ public class TradeServiceImpl implements TradeService {
                 .initialBalance(room.getInitialBalance())
                 .startTime(room.getStartTime())
                 .endTime(room.getEndTime())
-                .guideText("1. T+0 trading.\n2. Trading fee: 0.15%.\n3. Sell tax: 0.1%.\n4. Instant liquidity.")
+                .guideText("1. T+2 settlement.\n2. Trading fee: 0.15%.\n3. Sell tax: 0.1%.\n4. Newly bought shares can be sold after T+2.")
                 .build();
     }
 
@@ -67,11 +69,12 @@ public class TradeServiceImpl implements TradeService {
         BigDecimal currentPrice = quote.getPrice();
         BigDecimal quantity = new BigDecimal(request.getQuantity());
         BigDecimal tradeValue = currentPrice.multiply(quantity);
+        String symbol = request.getStockSymbol().trim().toUpperCase();
 
         if (request.getAction() == TradeAction.BUY) {
-            handleBuyOrder(portfolio, request.getStockSymbol(), currentPrice, quantity, tradeValue);
+            handleBuyOrder(portfolio, symbol, currentPrice, quantity, tradeValue);
         } else {
-            handleSellOrder(portfolio, request.getStockSymbol(), currentPrice, quantity, tradeValue);
+            handleSellOrder(portfolio, symbol, currentPrice, quantity, tradeValue);
         }
     }
 
@@ -120,8 +123,11 @@ public class TradeServiceImpl implements TradeService {
                 .orElseThrow(() -> new RuntimeException("You do not own stock symbol " + symbol));
 
         // FIX: So sánh chuẩn Long
-        if (item.getQuantity() < quantity.longValue()) {
-            throw new RuntimeException("Not enough shares to sell. Available: " + item.getQuantity());
+        long unsettledQuantity = getUnsettledBuyQuantity(portfolio.getId(), symbol);
+        long availableQuantity = item.getQuantity() - unsettledQuantity;
+
+        if (availableQuantity < quantity.longValue()) {
+            throw new RuntimeException("Not enough settled shares to sell. Available after T+2: " + Math.max(availableQuantity, 0));
         }
 
         BigDecimal fee = tradeValue.multiply(TRADING_FEE_RATE);
@@ -140,6 +146,17 @@ public class TradeServiceImpl implements TradeService {
         }
 
         recordTransaction(portfolio, symbol, TradeAction.SELL, quantity.longValue(), price, fee, tax, totalReceive);
+    }
+
+    private long getUnsettledBuyQuantity(Long portfolioId, String symbol) {
+        LocalDateTime settlementCutoff = LocalDateTime.now().minusDays(SETTLEMENT_DAYS);
+        Long unsettledQuantity = transactionRepository.sumQuantityByPortfolioSymbolTypeAfter(
+                portfolioId,
+                symbol,
+                TradeAction.BUY,
+                settlementCutoff
+        );
+        return unsettledQuantity == null ? 0L : unsettledQuantity;
     }
 
     private void recordTransaction(Portfolio portfolio, String symbol, TradeAction action, Long quantity, BigDecimal price, BigDecimal fee, BigDecimal tax, BigDecimal totalAmount) {

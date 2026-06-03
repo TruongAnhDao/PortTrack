@@ -11,10 +11,10 @@ interface RoomContext {
 const translateLegacyGuideText = (item: string) => {
   const normalized = item.replace(/^\d+\.\s*/, '').trim().toLowerCase();
 
-  if (normalized.includes('giao dịch t+0')) return '1. T+0 trading.';
-  if (normalized.includes('phí giao dịch')) return '2. Trading fee: 0.15%.';
-  if (normalized.includes('thuế bán')) return '3. Sell tax: 0.1%.';
-  if (normalized.includes('thanh khoản')) return '4. Instant liquidity.';
+  if (normalized.includes('giao d') || normalized.includes('t+0')) return '1. T+2 settlement.';
+  if (normalized.includes('ph') && normalized.includes('giao')) return '2. Trading fee: 0.15%.';
+  if (normalized.includes('thu') && normalized.includes('b')) return '3. Sell tax: 0.1%.';
+  if (normalized.includes('thanh')) return '4. Newly bought shares can be sold after T+2.';
 
   return item;
 };
