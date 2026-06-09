@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { authService } from '../../services/authService';
 import logo from '../../assets/logo.png';
 import { LogIn } from 'lucide-react';
@@ -11,6 +11,8 @@ export const LoginPage: React.FC = () => {
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const sessionExpired = searchParams.get('reason') === 'session-expired';
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -50,6 +52,11 @@ export const LoginPage: React.FC = () => {
         {error && (
           <div className="mb-4 p-3 rounded-lg bg-red-500/10 border border-red-500/50 text-red-400 text-sm text-center">
             {error}
+          </div>
+        )}
+        {!error && sessionExpired && (
+          <div className="mb-4 p-3 rounded-lg bg-amber-500/10 border border-amber-500/50 text-amber-300 text-sm text-center">
+            Your session has expired. Please sign in again.
           </div>
         )}
 

@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { clearSession, getStoredToken } from '../utils/auth';
 
 // Khởi tạo instance axios với config mặc định
 const api = axios.create({
@@ -12,7 +13,7 @@ const api = axios.create({
 api.interceptors.request.use(
   (config) => {
     // Bắt token từ localStorage trước khi request rời đi
-    const token = localStorage.getItem('token');
+    const token = getStoredToken();
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -31,13 +32,15 @@ api.interceptors.response.use(
   },
   (error) => {
     // Nếu có lỗi trả về từ Backend và mã lỗi là 401 (Hết hạn Token / Không hợp lệ)
-    if (error.response && error.response.status === 401) {
-      // Dọn dẹp dữ liệu phiên đăng nhập cũ
-      localStorage.removeItem('token');
-      localStorage.removeItem('username');
-      
-      // Điều hướng người dùng về trang đăng nhập bằng Object của Window
-      window.location.href = '/login';
+    const isAuthRequest = typeof error.config?.url === 'string'
+      && error.config.url.startsWith('/api/auth/');
+
+    if (error.response?.status === 401 && !isAuthRequest && getStoredToken()) {
+      clearSession();
+
+      if (window.location.pathname !== '/login') {
+        window.location.replace('/login?reason=session-expired');
+      }
     }
     
     // Tiếp tục ném lỗi ra ngoài để các Component (như Form Login/Register) tự xử lý thông báo UI
