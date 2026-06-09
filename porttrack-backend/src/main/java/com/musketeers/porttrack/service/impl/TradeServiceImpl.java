@@ -5,6 +5,7 @@ import com.musketeers.porttrack.dto.response.RoomDashboardResponse;
 import com.musketeers.porttrack.dto.response.StockPriceResponse;
 import com.musketeers.porttrack.entity.*;
 import com.musketeers.porttrack.entity.enums.TradeAction;
+import com.musketeers.porttrack.entity.enums.UserRole;
 import com.musketeers.porttrack.repository.*;
 import com.musketeers.porttrack.service.StockPriceService;
 import com.musketeers.porttrack.service.TradeService;
@@ -42,6 +43,7 @@ public class TradeServiceImpl implements TradeService {
     @Override
     public RoomDashboardResponse getRoomDashboard(Long roomId) {
         User currentUser = getCurrentUser();
+        requireStudent(currentUser);
         Room room = roomRepository.findById(roomId)
                 .orElseThrow(() -> new RuntimeException("Room does not exist."));
         Portfolio portfolio = portfolioRepository.findByUserIdAndRoomId(currentUser.getId(), roomId)
@@ -62,6 +64,7 @@ public class TradeServiceImpl implements TradeService {
     @Transactional
     public void executeTrade(Long roomId, TradeRequest request) {
         User currentUser = getCurrentUser();
+        requireStudent(currentUser);
 
         Portfolio portfolio = portfolioRepository.findByUserIdAndRoomId(currentUser.getId(), roomId)
                 .orElseThrow(() -> new RuntimeException("You have not joined this room."));
@@ -176,5 +179,11 @@ public class TradeServiceImpl implements TradeService {
                 .totalAmount(totalAmount)
                 .build();
         transactionRepository.save(tx);
+    }
+
+    private void requireStudent(User user) {
+        if (user.getRole() != UserRole.STUDENT) {
+            throw new RuntimeException("Only students can access player trading features.");
+        }
     }
 }

@@ -1,12 +1,14 @@
 import React from 'react';
 import { Navigate, Outlet, useLocation } from 'react-router-dom';
-import { clearSession, getStoredToken, isTokenValid } from '../../utils/auth';
+import { clearSession, getStoredRole, getStoredToken, isTokenValid } from '../../utils/auth';
 
 export const ProtectedRoute: React.FC = () => {
   const location = useLocation();
   const token = getStoredToken();
+  const role = getStoredRole();
 
-  if (!token) {
+  if (!token || !role) {
+    if (token) clearSession();
     return <Navigate to="/login" replace state={{ from: location }} />;
   }
 

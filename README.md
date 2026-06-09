@@ -23,6 +23,7 @@ The system is designed for academic projects and learning purposes.
 ## Main Features
 
 - User registration and login
+- Lecturer and student account roles
 - Create public/private investment rooms
 - Join existing rooms by room code
 - Virtual stock trading (BUY / SELL)
@@ -33,12 +34,14 @@ The system is designed for academic projects and learning purposes.
 - Submit a document link for each investment room
 - Room owners can open player submission links from the player management view
 
+Lecturer accounts create and manage rooms. Student accounts join rooms and participate in trading activities.
+
 ---
 
 ## Database Structure
 
 Main tables:
-- `users`: manage user accounts
+- `users`: manage user accounts and lecturer/student roles
 - `rooms`: manage investment rooms
 - `portfolios`: manage each user’s portfolio and submission link in a room
 - `portfolio_items`: stocks currently held

@@ -33,10 +33,13 @@ public class AuthServiceImpl implements AuthService {
 
         SecurityContextHolder.getContext().setAuthentication(authentication);
         String token = jwtTokenProvider.generateToken(authentication);
+        User user = userRepository.findByUsername(request.getUsername())
+                .orElseThrow(() -> new RuntimeException("Authenticated user not found."));
 
         return AuthResponse.builder()
                 .token(token)
-                .username(request.getUsername())
+                .username(user.getUsername())
+                .role(user.getRole())
                 .build();
     }
 
@@ -52,6 +55,7 @@ public class AuthServiceImpl implements AuthService {
         User user = User.builder()
                 .username(request.getUsername())
                 .passwordHash(passwordEncoder.encode(request.getPassword()))
+                .role(request.getRole())
                 .build();
 
         // 3. Lưu xuống database
@@ -67,6 +71,7 @@ public class AuthServiceImpl implements AuthService {
         return AuthResponse.builder()
                 .token(token)
                 .username(user.getUsername())
+                .role(user.getRole())
                 .build();
     }
 }

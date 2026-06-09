@@ -2,13 +2,15 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { authService } from '../../services/authService';
 import logo from '../../assets/logo.png';
-import { UserPlus } from 'lucide-react';
+import { ChevronDown, UserPlus } from 'lucide-react';
 import { getApiErrorMessage } from '../../utils/apiError';
+import { saveSession, type UserRole } from '../../utils/auth';
 
 export const RegisterPage: React.FC = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [role, setRole] = useState<UserRole>('STUDENT');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
@@ -24,15 +26,12 @@ export const RegisterPage: React.FC = () => {
 
     setIsLoading(true);
     try {
-      // Gọi API đăng ký
-      await authService.register({ username, password });
-      
-      // Auto login sau khi đăng ký thành công
-      const data = await authService.login({ username, password });
-      const token = typeof data === 'string' ? data : data.accessToken || data.token || '';
-      
-      localStorage.setItem('token', token);
-      localStorage.setItem('username', username);
+      const data = await authService.register({ username, password, role });
+      if (typeof data === 'string' || !data.role) {
+        throw new Error('Invalid registration response.');
+      }
+      const token = data.accessToken || data.token || '';
+      saveSession(token, data.username || username, data.role);
       navigate('/dashboard');
     } catch (err: unknown) {
       setError(getApiErrorMessage(err, 'Registration failed. The username may already exist.'));
@@ -67,6 +66,21 @@ export const RegisterPage: React.FC = () => {
               className="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-slate-50 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
               placeholder="Choose a username"
             />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-slate-300 mb-1">Account Type</label>
+            <div className="relative">
+              <select
+                required
+                value={role}
+                onChange={(event) => setRole(event.target.value as UserRole)}
+                className="w-full appearance-none bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 pr-11 text-slate-50 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+              >
+                <option value="STUDENT">Student</option>
+                <option value="LECTURER">Lecturer</option>
+              </select>
+              <ChevronDown className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-slate-500" size={18} />
+            </div>
           </div>
           <div>
             <label className="block text-sm font-medium text-slate-300 mb-1">Password</label>

@@ -9,6 +9,7 @@ import com.musketeers.porttrack.entity.Room;
 import com.musketeers.porttrack.entity.User;
 import com.musketeers.porttrack.entity.enums.RoomStatus;
 import com.musketeers.porttrack.entity.enums.RoomType;
+import com.musketeers.porttrack.entity.enums.UserRole;
 import com.musketeers.porttrack.repository.PortfolioRepository;
 import com.musketeers.porttrack.repository.RoomRepository;
 import com.musketeers.porttrack.repository.UserRepository;
@@ -70,6 +71,10 @@ public class RoomServiceImpl implements RoomService {
     public RoomResponse createRoom(CreateRoomRequest request) {
         User currentUser = getCurrentUser();
 
+        if (currentUser.getRole() != UserRole.LECTURER) {
+            throw new RuntimeException("Only lecturers can create rooms.");
+        }
+
         if (request.getType() == RoomType.PRIVATE && (request.getPassword() == null || request.getPassword().isBlank())) {
             throw new RuntimeException("Private rooms require a password.");
         }
@@ -94,6 +99,11 @@ public class RoomServiceImpl implements RoomService {
     @Transactional
     public RoomResponse joinRoom(JoinRoomRequest request) {
         User currentUser = getCurrentUser();
+
+        if (currentUser.getRole() != UserRole.STUDENT) {
+            throw new RuntimeException("Only students can join rooms.");
+        }
+
         Room room = roomRepository.findByCode(request.getCode())
                 .orElseThrow(() -> new RuntimeException("Room not found."));
 
@@ -125,6 +135,9 @@ public class RoomServiceImpl implements RoomService {
     @Override
     public List<RoomResponse> getOwnedRooms() {
         User currentUser = getCurrentUser();
+        if (currentUser.getRole() != UserRole.LECTURER) {
+            throw new RuntimeException("Only lecturers can manage rooms.");
+        }
         return roomRepository.findByOwnerId(currentUser.getId()).stream()
                 .map(this::mapToRoomResponse)
                 .collect(Collectors.toList());
@@ -133,6 +146,9 @@ public class RoomServiceImpl implements RoomService {
     @Override
     public List<JoinedRoomResponse> getJoinedRooms() {
         User currentUser = getCurrentUser();
+        if (currentUser.getRole() != UserRole.STUDENT) {
+            throw new RuntimeException("Only students can access joined rooms.");
+        }
         return portfolioRepository.findByUserId(currentUser.getId()).stream()
                 .map(portfolio -> JoinedRoomResponse.builder()
                         .roomInfo(mapToRoomResponse(portfolio.getRoom()))

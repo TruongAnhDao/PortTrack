@@ -2,6 +2,7 @@ import React from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import logo from '../../assets/logo.png';
 import { LogOut } from 'lucide-react';
+import { clearSession } from '../../utils/auth';
 
 interface HeaderProps {
   roomStats?: {
@@ -22,8 +23,7 @@ export const Header: React.FC<HeaderProps> = ({ roomStats }) => {
   };
 
   const handleLogout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('username');
+    clearSession();
     navigate('/');
   };
 

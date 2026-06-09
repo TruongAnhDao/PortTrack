@@ -11,6 +11,7 @@ import com.musketeers.porttrack.entity.PortfolioItem;
 import com.musketeers.porttrack.entity.Transaction;
 import com.musketeers.porttrack.entity.User;
 import com.musketeers.porttrack.entity.enums.TradeAction;
+import com.musketeers.porttrack.entity.enums.UserRole;
 import com.musketeers.porttrack.repository.PortfolioItemRepository;
 import com.musketeers.porttrack.repository.PortfolioRepository;
 import com.musketeers.porttrack.repository.TransactionRepository;
@@ -125,6 +126,9 @@ public class PortfolioViewServiceImpl implements PortfolioViewService {
 
     private Portfolio getCurrentPortfolio(Long roomId) {
         User currentUser = getCurrentUser();
+        if (currentUser.getRole() != UserRole.STUDENT) {
+            throw new RuntimeException("Only students can access player portfolio features.");
+        }
         return portfolioRepository.findByUserIdAndRoomId(currentUser.getId(), roomId)
                 .orElseThrow(() -> new RuntimeException("You have not joined this room as a player."));
     }

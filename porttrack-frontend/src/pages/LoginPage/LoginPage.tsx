@@ -4,6 +4,7 @@ import { authService } from '../../services/authService';
 import logo from '../../assets/logo.png';
 import { LogIn } from 'lucide-react';
 import { getApiErrorMessage } from '../../utils/apiError';
+import { saveSession } from '../../utils/auth';
 
 export const LoginPage: React.FC = () => {
   const [username, setUsername] = useState('');
@@ -21,11 +22,11 @@ export const LoginPage: React.FC = () => {
     
     try {
       const data = await authService.login({ username, password });
-      // Giả sử backend trả về object có chứa token (tùy format DTO của bạn)
-      const token = typeof data === 'string' ? data : data.accessToken || data.token || ''; 
-      
-      localStorage.setItem('token', token);
-      localStorage.setItem('username', username);
+      if (typeof data === 'string' || !data.role) {
+        throw new Error('Invalid authentication response.');
+      }
+      const token = data.accessToken || data.token || '';
+      saveSession(token, data.username || username, data.role);
       
       navigate('/dashboard');
     } catch (err: unknown) {
