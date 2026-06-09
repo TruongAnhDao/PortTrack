@@ -30,6 +30,8 @@ The system is designed for academic projects and learning purposes.
 - Transaction history
 - Daily NAV tracking
 - Ranking and performance comparison
+- Submit a document link for each investment room
+- Room owners can open player submission links from the player management view
 
 ---
 
@@ -38,7 +40,7 @@ The system is designed for academic projects and learning purposes.
 Main tables:
 - `users`: manage user accounts
 - `rooms`: manage investment rooms
-- `portfolios`: manage each user’s portfolio in a room
+- `portfolios`: manage each user’s portfolio and submission link in a room
 - `portfolio_items`: stocks currently held
 - `transactions`: buy/sell history
 - `daily_nav_history`: daily portfolio value

@@ -37,6 +37,13 @@ export interface RoomDashboardData {
   startTime?: string;
   endTime?: string;
   guideText?: string;
+  submissionUrl?: string | null;
+  submissionUpdatedAt?: string | null;
+}
+
+export interface SubmissionLinkData {
+  submissionUrl: string;
+  submissionUpdatedAt: string;
 }
 
 export interface TradeData {
@@ -119,7 +126,7 @@ export interface OwnerPlayerData {
   returnPercentage: number;
   holdingCount: number;
   totalTrades: number;
-  joinedAt: string;
+  submissionUrl?: string | null;
 }
 
 export interface OwnerLeaderboardEntryData {
@@ -200,6 +207,10 @@ export const roomService = {
   },
   getSummary: async (roomId: number): Promise<SummaryData> => {
     const response = await api.get<SummaryData>(`/api/rooms/${roomId}/summary`);
+    return response.data;
+  },
+  updateSubmissionLink: async (roomId: number, submissionUrl: string): Promise<SubmissionLinkData> => {
+    const response = await api.patch<SubmissionLinkData>(`/api/rooms/${roomId}/submission`, { submissionUrl });
     return response.data;
   },
   getOwnerDashboard: async (roomId: number): Promise<OwnerRoomDashboardData> => {

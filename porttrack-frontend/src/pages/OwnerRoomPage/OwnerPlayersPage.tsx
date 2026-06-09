@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useOutletContext } from 'react-router-dom';
-import { AlertCircle, Briefcase, Loader2, Search, TrendingDown, TrendingUp, Users, Wallet } from 'lucide-react';
+import { AlertCircle, Briefcase, ExternalLink, Link2, Loader2, Search, TrendingDown, TrendingUp, Users, Wallet } from 'lucide-react';
 import { roomService, type OwnerPlayerData } from '../../services/roomService';
 import type { OwnerRoomContext } from './OwnerRoomLayout';
 
@@ -9,10 +9,6 @@ const formatCurrency = (amount?: number | null) => {
 };
 
 const formatPercent = (amount?: number | null) => `${(amount ?? 0).toFixed(2)}%`;
-
-const formatDateTime = (value: string) => {
-  return new Intl.DateTimeFormat('vi-VN', { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(value));
-};
 
 export const OwnerPlayersPage: React.FC = () => {
   const { roomId, ownerDataVersion } = useOutletContext<OwnerRoomContext>();
@@ -123,7 +119,7 @@ export const OwnerPlayersPage: React.FC = () => {
         </div>
 
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[980px] text-left">
+          <table className="w-full min-w-[920px] text-left">
             <thead>
               <tr className="border-b border-slate-700/80 text-xs uppercase tracking-widest text-slate-500">
                 <th className="py-4 pr-4">Player</th>
@@ -133,7 +129,7 @@ export const OwnerPlayersPage: React.FC = () => {
                 <th className="py-4 pr-4 text-right">P/L</th>
                 <th className="py-4 pr-4 text-right">Return</th>
                 <th className="py-4 pr-4 text-right">Symbols</th>
-                <th className="py-4 text-right">Joined</th>
+                <th className="py-4 text-center">Submission</th>
               </tr>
             </thead>
             <tbody>
@@ -170,7 +166,26 @@ export const OwnerPlayersPage: React.FC = () => {
                         {player.holdingCount}
                       </span>
                     </td>
-                    <td className="py-5 text-right text-xs text-slate-500">{formatDateTime(player.joinedAt)}</td>
+                    <td className="py-5 text-center">
+                      {player.submissionUrl ? (
+                        <a
+                          href={player.submissionUrl}
+                          target="_blank"
+                          rel="noreferrer"
+                          title={`Open ${player.username}'s submission`}
+                          className="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-cyan-500/30 bg-cyan-500/10 text-cyan-300 transition hover:bg-cyan-500/20 hover:text-white"
+                        >
+                          <ExternalLink size={17} />
+                        </a>
+                      ) : (
+                        <span
+                          title="No submission link"
+                          className="inline-flex h-9 w-9 items-center justify-center text-slate-600"
+                        >
+                          <Link2 size={17} />
+                        </span>
+                      )}
+                    </td>
                   </tr>
                 );
               })}

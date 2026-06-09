@@ -1,0 +1,10 @@
+USE port_track;
+
+-- Run this once for an existing PortTrack database.
+ALTER TABLE portfolios
+    ADD COLUMN submission_url VARCHAR(2048) NULL
+        COMMENT 'Link bài nộp của người chơi trong phòng'
+        AFTER version,
+    ADD COLUMN submission_updated_at TIMESTAMP NULL
+        COMMENT 'Thời điểm cập nhật link bài nộp gần nhất'
+        AFTER submission_url;

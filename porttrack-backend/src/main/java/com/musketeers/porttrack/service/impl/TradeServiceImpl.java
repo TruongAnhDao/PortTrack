@@ -41,8 +41,11 @@ public class TradeServiceImpl implements TradeService {
 
     @Override
     public RoomDashboardResponse getRoomDashboard(Long roomId) {
+        User currentUser = getCurrentUser();
         Room room = roomRepository.findById(roomId)
                 .orElseThrow(() -> new RuntimeException("Room does not exist."));
+        Portfolio portfolio = portfolioRepository.findByUserIdAndRoomId(currentUser.getId(), roomId)
+                .orElseThrow(() -> new RuntimeException("You have not joined this room."));
 
         return RoomDashboardResponse.builder()
                 .name(room.getName())
@@ -50,6 +53,8 @@ public class TradeServiceImpl implements TradeService {
                 .startTime(room.getStartTime())
                 .endTime(room.getEndTime())
                 .guideText("1. T+2 settlement.\n2. Trading fee: 0.15%.\n3. Sell tax: 0.1%.\n4. Newly bought shares can be sold after T+2.")
+                .submissionUrl(portfolio.getSubmissionUrl())
+                .submissionUpdatedAt(portfolio.getSubmissionUpdatedAt())
                 .build();
     }
 

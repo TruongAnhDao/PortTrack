@@ -4,7 +4,6 @@ import lombok.Builder;
 import lombok.Data;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
 
 @Data
 @Builder
@@ -19,5 +18,5 @@ public class OwnerPlayerResponse {
     private BigDecimal returnPercentage;
     private long holdingCount;
     private long totalTrades;
-    private LocalDateTime joinedAt;
+    private String submissionUrl;
 }

@@ -13,4 +13,6 @@ public class RoomDashboardResponse {
     private LocalDateTime startTime;
     private LocalDateTime endTime;
     private String guideText;
+    private String submissionUrl;
+    private LocalDateTime submissionUpdatedAt;
 }

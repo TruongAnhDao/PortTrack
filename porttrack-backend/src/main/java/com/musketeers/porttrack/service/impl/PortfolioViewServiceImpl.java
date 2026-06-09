@@ -1,7 +1,9 @@
 package com.musketeers.porttrack.service.impl;
 
+import com.musketeers.porttrack.dto.request.SubmissionLinkRequest;
 import com.musketeers.porttrack.dto.response.PortfolioItemResponse;
 import com.musketeers.porttrack.dto.response.PortfolioResponse;
+import com.musketeers.porttrack.dto.response.SubmissionLinkResponse;
 import com.musketeers.porttrack.dto.response.SummaryResponse;
 import com.musketeers.porttrack.dto.response.TransactionResponse;
 import com.musketeers.porttrack.entity.Portfolio;
@@ -22,6 +24,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.net.URI;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -102,6 +106,23 @@ public class PortfolioViewServiceImpl implements PortfolioViewService {
                 .build();
     }
 
+    @Override
+    @Transactional
+    public SubmissionLinkResponse updateSubmissionLink(Long roomId, SubmissionLinkRequest request) {
+        Portfolio portfolio = getCurrentPortfolio(roomId);
+        String submissionUrl = normalizeSubmissionUrl(request.getSubmissionUrl());
+        LocalDateTime updatedAt = LocalDateTime.now();
+
+        portfolio.setSubmissionUrl(submissionUrl);
+        portfolio.setSubmissionUpdatedAt(updatedAt);
+        portfolioRepository.save(portfolio);
+
+        return SubmissionLinkResponse.builder()
+                .submissionUrl(submissionUrl)
+                .submissionUpdatedAt(updatedAt)
+                .build();
+    }
+
     private Portfolio getCurrentPortfolio(Long roomId) {
         User currentUser = getCurrentUser();
         return portfolioRepository.findByUserIdAndRoomId(currentUser.getId(), roomId)
@@ -161,5 +182,22 @@ public class PortfolioViewServiceImpl implements PortfolioViewService {
             return BigDecimal.ZERO;
         }
         return numerator.multiply(ONE_HUNDRED).divide(denominator, 2, RoundingMode.HALF_UP);
+    }
+
+    private String normalizeSubmissionUrl(String value) {
+        String normalizedUrl = value.trim();
+
+        try {
+            URI uri = URI.create(normalizedUrl);
+            String scheme = uri.getScheme();
+            if (scheme == null
+                    || (!scheme.equalsIgnoreCase("http") && !scheme.equalsIgnoreCase("https"))
+                    || uri.getHost() == null) {
+                throw new RuntimeException("Submission link must be a valid HTTP or HTTPS URL.");
+            }
+            return uri.toString();
+        } catch (IllegalArgumentException ex) {
+            throw new RuntimeException("Submission link must be a valid HTTP or HTTPS URL.");
+        }
     }
 }

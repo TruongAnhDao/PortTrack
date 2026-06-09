@@ -35,6 +35,8 @@ CREATE TABLE portfolios (
     room_id BIGINT NOT NULL,
     cash_balance DECIMAL(20,2) NOT NULL COMMENT 'Sức mua còn lại',
     version INT DEFAULT 0 COMMENT 'Optimistic Locking chặn Race Condition',
+    submission_url VARCHAR(2048) NULL COMMENT 'Link bài nộp của người chơi trong phòng',
+    submission_updated_at TIMESTAMP NULL COMMENT 'Thời điểm cập nhật link bài nộp gần nhất',
     joined_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT fk_portfolios_user
         FOREIGN KEY (user_id)

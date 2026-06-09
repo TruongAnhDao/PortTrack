@@ -40,6 +40,12 @@ public class Portfolio {
     @Column(name = "version")
     private Integer version;
 
+    @Column(name = "submission_url", length = 2048)
+    private String submissionUrl;
+
+    @Column(name = "submission_updated_at")
+    private LocalDateTime submissionUpdatedAt;
+
     @CreationTimestamp
     @Column(name = "joined_at", updatable = false)
     private LocalDateTime joinedAt;

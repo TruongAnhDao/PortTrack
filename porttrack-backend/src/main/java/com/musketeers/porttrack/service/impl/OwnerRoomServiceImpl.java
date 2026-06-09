@@ -87,7 +87,7 @@ public class OwnerRoomServiceImpl implements OwnerRoomService {
                         .returnPercentage(stats.getReturnPercentage())
                         .holdingCount(stats.getHoldingCount())
                         .totalTrades(stats.getTotalTrades())
-                        .joinedAt(stats.getJoinedAt())
+                        .submissionUrl(stats.getSubmissionUrl())
                         .build())
                 .toList();
     }
@@ -196,7 +196,7 @@ public class OwnerRoomServiceImpl implements OwnerRoomService {
                 .returnPercentage(percent(totalProfitLoss, initialBalance))
                 .holdingCount(holdings.size())
                 .totalTrades(transactionRepository.countByPortfolioId(portfolio.getId()))
-                .joinedAt(portfolio.getJoinedAt())
+                .submissionUrl(portfolio.getSubmissionUrl())
                 .build();
     }
 
@@ -283,7 +283,7 @@ public class OwnerRoomServiceImpl implements OwnerRoomService {
         BigDecimal returnPercentage;
         long holdingCount;
         long totalTrades;
-        java.time.LocalDateTime joinedAt;
+        String submissionUrl;
         int rank;
     }
 }

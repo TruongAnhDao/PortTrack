@@ -27,9 +27,11 @@ user_id (BIGINT): người sở hữu danh mục
 room_id (BIGINT): phòng tương ứng
 cash_balance (DECIMAL): số dư tiền mặt còn lại
 version (INT): kiểm soát cập nhật đồng thời
+submission_url (VARCHAR): link bài nộp của người chơi trong phòng, hỗ trợ URL HTTP/HTTPS
+submission_updated_at (TIMESTAMP): thời điểm người chơi cập nhật link bài nộp gần nhất
 joined_at (TIMESTAMP): thời gian tham gia
 
-Chức năng: lưu số dư và thông tin danh mục đầu tư của mỗi người trong mỗi phòng.
+Chức năng: lưu số dư, thông tin danh mục đầu tư và link bài nộp của mỗi người trong mỗi phòng.
 
 4. Bảng portfolio_items: Quản lý các cổ phiếu đang nắm giữ
 id (BIGINT): mã bản ghi

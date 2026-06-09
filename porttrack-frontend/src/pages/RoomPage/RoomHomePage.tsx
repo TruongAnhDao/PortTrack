@@ -1,11 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { useOutletContext } from 'react-router-dom';
-import { Timer, ScrollText, BookOpen, ChevronRight, AlertTriangle } from 'lucide-react';
-import type { RoomDashboardData } from '../../services/roomService';
+import { AlertTriangle, BookOpen, CheckCircle2, ChevronRight, ExternalLink, Link2, Loader2, Save, ScrollText, Timer } from 'lucide-react';
+import { roomService, type RoomDashboardData } from '../../services/roomService';
+import { getApiErrorMessage } from '../../utils/apiError';
 
 interface RoomContext {
   dashboard: RoomDashboardData | null;
   currentCashBalance: number | null;
+  roomId: number;
 }
 
 const translateLegacyGuideText = (item: string) => {
@@ -20,8 +22,16 @@ const translateLegacyGuideText = (item: string) => {
 };
 
 export const RoomHomePage: React.FC = () => {
-  const { dashboard, currentCashBalance } = useOutletContext<RoomContext>();
+  const { dashboard, currentCashBalance, roomId } = useOutletContext<RoomContext>();
   const [now, setNow] = useState(() => Date.now());
+  const [submissionDraft, setSubmissionDraft] = useState<string | null>(null);
+  const [savedSubmission, setSavedSubmission] = useState<{ url: string; updatedAt: string } | null>(null);
+  const [submissionMessage, setSubmissionMessage] = useState('');
+  const [submissionError, setSubmissionError] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const submissionUrl = submissionDraft ?? savedSubmission?.url ?? dashboard?.submissionUrl ?? '';
+  const savedSubmissionUrl = savedSubmission?.url ?? dashboard?.submissionUrl ?? '';
+  const submissionUpdatedAt = savedSubmission?.updatedAt ?? dashboard?.submissionUpdatedAt ?? null;
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount || 0);
@@ -48,6 +58,35 @@ export const RoomHomePage: React.FC = () => {
 
     return () => window.clearInterval(intervalId);
   }, []);
+
+  const handleSubmission = async (event: React.FormEvent) => {
+    event.preventDefault();
+    setSubmissionError('');
+    setSubmissionMessage('');
+
+    const normalizedUrl = submissionUrl.trim();
+    try {
+      const parsedUrl = new URL(normalizedUrl);
+      if (parsedUrl.protocol !== 'http:' && parsedUrl.protocol !== 'https:') {
+        throw new Error('Invalid protocol');
+      }
+    } catch {
+      setSubmissionError('Enter a valid link starting with http:// or https://.');
+      return;
+    }
+
+    try {
+      setIsSubmitting(true);
+      const result = await roomService.updateSubmissionLink(roomId, normalizedUrl);
+      setSubmissionDraft(null);
+      setSavedSubmission({ url: result.submissionUrl, updatedAt: result.submissionUpdatedAt });
+      setSubmissionMessage('Submission link saved.');
+    } catch (error) {
+      setSubmissionError(getApiErrorMessage(error, 'Unable to save the submission link.'));
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   const remaining = getTimeRemaining();
   const guideItems = dashboard?.guideText
@@ -128,24 +167,91 @@ export const RoomHomePage: React.FC = () => {
         </div>
 
         <div className="space-y-6">
-          <div className="bg-gradient-to-br from-blue-600 to-cyan-600 p-8 rounded-[2rem] shadow-premium relative overflow-hidden group hover:scale-[1.02] transition-transform">
-            <BookOpen className="text-white/10 absolute -right-6 -bottom-6 group-hover:scale-110 transition-transform" size={140} />
+          <section className="rounded-[2rem] border border-slate-700/60 bg-slate-800/40 p-6 backdrop-blur-sm">
+            <div className="mb-5 flex items-start justify-between gap-4">
+              <div>
+                <div className="mb-2 flex items-center gap-2 text-cyan-400">
+                  <Link2 size={20} />
+                  <h3 className="text-sm font-black uppercase tracking-wider text-white">Submission Link</h3>
+                </div>
+                <p className="text-xs leading-relaxed text-slate-400">
+                  Submit a viewable Google Sheet, Drive file, or document link.
+                </p>
+              </div>
+              {savedSubmissionUrl && (
+                <a
+                  href={savedSubmissionUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  title="Open submitted link"
+                  className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-cyan-500/30 bg-cyan-500/10 text-cyan-300 transition hover:bg-cyan-500/20 hover:text-white"
+                >
+                  <ExternalLink size={18} />
+                </a>
+              )}
+            </div>
 
-            <h3 className="text-2xl font-black text-white mb-2 relative z-10">Academy</h3>
-            <p className="text-blue-100 text-sm mb-8 relative z-10 font-medium">Master the frameworks to pick your first winning stocks.</p>
+            <form onSubmit={handleSubmission} className="space-y-3">
+              <input
+                type="url"
+                required
+                maxLength={2048}
+                value={submissionUrl}
+                onChange={(event) => {
+                  setSubmissionDraft(event.target.value);
+                  setSubmissionError('');
+                  setSubmissionMessage('');
+                }}
+                placeholder="https://docs.google.com/..."
+                className="w-full rounded-xl border border-slate-700 bg-slate-950/80 px-4 py-3 text-sm text-white outline-none transition placeholder:text-slate-600 focus:border-cyan-500"
+              />
 
-            <div className="space-y-3 relative z-10">
+              {submissionError && <p className="text-xs font-medium text-rose-400">{submissionError}</p>}
+              {submissionMessage && (
+                <p className="flex items-center gap-1.5 text-xs font-medium text-emerald-400">
+                  <CheckCircle2 size={14} />
+                  {submissionMessage}
+                </p>
+              )}
+
+              <div className="flex items-center justify-between gap-3">
+                <p className="text-[10px] text-slate-500">
+                  {submissionUpdatedAt
+                    ? `Updated ${new Date(submissionUpdatedAt).toLocaleString('vi-VN')}`
+                    : 'No link submitted yet'}
+                </p>
+                <button
+                  type="submit"
+                  disabled={isSubmitting || submissionUrl.trim() === savedSubmissionUrl}
+                  className="inline-flex min-w-24 items-center justify-center gap-2 rounded-xl bg-cyan-500 px-4 py-2.5 text-xs font-black text-slate-950 transition hover:bg-cyan-300 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  {isSubmitting ? <Loader2 className="animate-spin" size={16} /> : <Save size={16} />}
+                  Save
+                </button>
+              </div>
+            </form>
+          </section>
+
+          <div className="bg-gradient-to-br from-blue-600 to-cyan-600 p-6 rounded-[2rem] shadow-premium relative overflow-hidden">
+            <BookOpen className="text-white/10 absolute -right-4 -bottom-5" size={104} />
+
+            <h3 className="text-xl font-black text-white mb-1 relative z-10">Academy</h3>
+            <p className="text-blue-100 text-xs leading-relaxed mb-4 relative z-10 font-medium">
+              Master the frameworks to pick your first winning stocks.
+            </p>
+
+            <div className="space-y-2 relative z-10">
               {[
                 { title: 'Fundamental Analysis', desc: 'PE, PB, ROE basics' },
                 { title: 'Technical Indicators', desc: 'MA, RSI, MACD setup' },
                 { title: 'Risk Management', desc: 'Position sizing rules' },
               ].map((item) => (
-                <div key={item.title} className="flex items-center justify-between bg-slate-950/20 hover:bg-slate-950/40 p-4 rounded-xl transition-all cursor-pointer backdrop-blur-sm border border-white/10">
-                  <div>
-                    <span className="block text-sm font-bold text-white mb-0.5">{item.title}</span>
-                    <span className="block text-[10px] text-blue-200 uppercase tracking-widest">{item.desc}</span>
+                <div key={item.title} className="flex min-h-14 items-center justify-between gap-3 bg-slate-950/20 hover:bg-slate-950/40 px-4 py-3 rounded-xl transition-colors cursor-pointer backdrop-blur-sm border border-white/10">
+                  <div className="min-w-0">
+                    <span className="block truncate text-sm font-bold text-white">{item.title}</span>
+                    <span className="block truncate text-[10px] text-blue-200 uppercase tracking-widest">{item.desc}</span>
                   </div>
-                  <ChevronRight size={18} className="text-white" />
+                  <ChevronRight size={17} className="shrink-0 text-white" />
                 </div>
               ))}
             </div>
