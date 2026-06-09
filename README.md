@@ -1,7 +1,7 @@
 # PortTrack
 
 A web-based stock investment simulation platform designed for educational purposes.  
-Users can create or join investment rooms, receive virtual capital, trade stocks, and track portfolio performance over time.
+Users can create or join investment rooms, receive virtual capital, trade stocks, and track portfolio performance over time. 
 
 ---
 
@@ -60,7 +60,7 @@ Main tables:
 - MySQL
 
 ### Tools
-- Git / GitHub
+- Git / GitHubccccc
 - VS Code 
 
 ---
