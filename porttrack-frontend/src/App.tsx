@@ -14,6 +14,7 @@ import { OwnerDashboardPage } from './pages/OwnerRoomPage/OwnerDashboardPage';
 import { OwnerPlayersPage } from './pages/OwnerRoomPage/OwnerPlayersPage';
 import { OwnerTransactionsPage } from './pages/OwnerRoomPage/OwnerTransactionsPage';
 import { OwnerLeaderboardPage } from './pages/OwnerRoomPage/OwnerLeaderboardPage';
+import { ProtectedRoute } from './components/auth/ProtectedRoute';
 import './App.css';
 
 function App() {
@@ -23,19 +24,21 @@ function App() {
         <Route path="/" element={<LandingPage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
-        <Route path="/dashboard" element={<DashboardPage />} />
-        <Route path="/room/:roomId" element={<RoomLayout />}>
-          <Route index element={<RoomHomePage />} />
-          <Route path="portfolio" element={<PortfolioPage />} />
-          <Route path="trade" element={<RoomTradePage />} />
-          <Route path="transactions" element={<TransactionHistoryPage />} />
-          <Route path="summary" element={<SummaryPage />} />
-        </Route>
-        <Route path="/owner/rooms/:roomId" element={<OwnerRoomLayout />}>
-          <Route index element={<OwnerDashboardPage />} />
-          <Route path="players" element={<OwnerPlayersPage />} />
-          <Route path="transactions" element={<OwnerTransactionsPage />} />
-          <Route path="leaderboard" element={<OwnerLeaderboardPage />} />
+        <Route element={<ProtectedRoute />}>
+          <Route path="/dashboard" element={<DashboardPage />} />
+          <Route path="/room/:roomId" element={<RoomLayout />}>
+            <Route index element={<RoomHomePage />} />
+            <Route path="portfolio" element={<PortfolioPage />} />
+            <Route path="trade" element={<RoomTradePage />} />
+            <Route path="transactions" element={<TransactionHistoryPage />} />
+            <Route path="summary" element={<SummaryPage />} />
+          </Route>
+          <Route path="/owner/rooms/:roomId" element={<OwnerRoomLayout />}>
+            <Route index element={<OwnerDashboardPage />} />
+            <Route path="players" element={<OwnerPlayersPage />} />
+            <Route path="transactions" element={<OwnerTransactionsPage />} />
+            <Route path="leaderboard" element={<OwnerLeaderboardPage />} />
+          </Route>
         </Route>
       </Routes>
     </Router>
