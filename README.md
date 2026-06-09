@@ -60,7 +60,7 @@ Main tables:
 - MySQL
 
 ### Tools
-- Git / GitHubccccc
+- Git / GitHub
 - VS Code 
 
 ---
