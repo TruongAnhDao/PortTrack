@@ -86,7 +86,7 @@ PortTrack/
 │   ├── pom.xml                          # File khai báo thư viện Java (Web, JPA, MySQL...)
 │   ├── src/main/java/com/musketeers/porttrack
 |   |   ├── PorttrackApplication.java  # File chạy chính (Main class) của Backend
-|   |   ├── config/           # Cấu hình toàn cục (Security, WebSocket, CORS, Swagger...)
+|   |   ├── config/           # Cấu hình toàn cục (Security, CORS...)
 |   |   ├── controller/       # Nơi tiếp nhận Request từ Frontend (API Endpoints)
 |   |   ├── dto/              # Data Transfer Object (Đối tượng giao tiếp với Frontend)
 |   |   │   ├── request/      # DTO hứng dữ liệu từ Frontend gửi lên
@@ -99,7 +99,7 @@ PortTrack/
 |   |   │   └── impl/         # Triển khai chi tiết của Interfaces
 |   |   └── util/             # Các hàm tiện ích dùng chung (Format ngày tháng, String...)
 │   ├── src/main/resources/
-│   │   └── application.properties       # Nơi điền cổng (port), tên đăng nhập/mật khẩu MySQL
+│   │   └── application.properties       # Cấu hình ứng dụng lấy từ biến môi trường
 │   └── src/test/.../PorttrackApplicationTests.java  # File dành để viết code tự động kiểm thử (Unit Test)
 │
 └── porttrack-frontend/                  # THƯ MỤC FRONTEND (REACTJS + VITE)
@@ -132,7 +132,7 @@ Lưu ý: Khi code màn nào hay chức năng nào thì cần phải chia folder 
 ## How to run
 **1. Khởi động Backend (Spring Boot)**
 - Mở Terminal, di chuyển vào thư mục `cd porttrack-backend`
-- Đảm bảo đã cài Java 17 và cấu hình MySQL đúng trong `application.properties`.
+- Đảm bảo đã cài Java 17, tạo schema và thiết lập `DB_PASSWORD`, `JWT_SECRET`.
 - Chạy lệnh:
   - Windows: `.\mvnw spring-boot:run` hoặc run file app
   - Mac/Linux: `./mvnw spring-boot:run`
@@ -148,3 +148,8 @@ Lưu ý: Khi code màn nào hay chức năng nào thì cần phải chia folder 
 **3. Cách test gọi API giá
 - `cd test-mqtt-stock`
 - `node test-current-price.js`
+
+## Deployment
+
+Deployment configuration and environment variables are documented in
+[`DEPLOYMENT.md`](DEPLOYMENT.md).

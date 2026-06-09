@@ -17,7 +17,7 @@ CREATE TABLE rooms (
     name VARCHAR(255) NOT NULL,
     code VARCHAR(50) UNIQUE NOT NULL,
     type ENUM('PUBLIC', 'PRIVATE') NOT NULL,
-    password VARCHAR(255) NULL,
+    password VARCHAR(255) NULL COMMENT 'BCrypt hash for private-room password',
     owner_id BIGINT NOT NULL,
     initial_balance DECIMAL(20,2) NOT NULL COMMENT 'Vốn khởi tạo',
     status ENUM('WAITING', 'RUNNING', 'FINISHED') DEFAULT 'WAITING',

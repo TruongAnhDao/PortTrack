@@ -16,6 +16,7 @@ import com.musketeers.porttrack.repository.UserRepository;
 import com.musketeers.porttrack.service.RoomService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -30,6 +31,7 @@ public class RoomServiceImpl implements RoomService {
     private final RoomRepository roomRepository;
     private final PortfolioRepository portfolioRepository;
     private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
 
     private User getCurrentUser() {
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
@@ -84,7 +86,9 @@ public class RoomServiceImpl implements RoomService {
                 .name(request.getName())
                 .code(generateUniqueRoomCode())
                 .type(request.getType())
-                .password(request.getType() == RoomType.PRIVATE ? request.getPassword() : null)
+                .password(request.getType() == RoomType.PRIVATE
+                        ? passwordEncoder.encode(request.getPassword())
+                        : null)
                 .ownerId(currentUser.getId())
                 .initialBalance(request.getInitialBalance())
                 .status(RoomStatus.WAITING)
@@ -112,8 +116,15 @@ public class RoomServiceImpl implements RoomService {
             throw new RuntimeException("You are the owner of this room and cannot join as a player.");
         }
 
-        if (room.getType() == RoomType.PRIVATE && !room.getPassword().equals(request.getPassword())) {
-            throw new RuntimeException("Incorrect password.");
+        if (room.getType() == RoomType.PRIVATE) {
+            if (!roomPasswordMatches(room.getPassword(), request.getPassword())) {
+                throw new RuntimeException("Incorrect password.");
+            }
+
+            if (!isBcryptHash(room.getPassword())) {
+                room.setPassword(passwordEncoder.encode(request.getPassword()));
+                roomRepository.save(room);
+            }
         }
 
         if (portfolioRepository.existsByUserIdAndRoomId(currentUser.getId(), room.getId())) {
@@ -130,6 +141,19 @@ public class RoomServiceImpl implements RoomService {
         System.out.println("Current user: " + currentUser.getUsername() + " id=" + currentUser.getId());
 
         return mapToRoomResponse(room);
+    }
+
+    private boolean roomPasswordMatches(String storedPassword, String suppliedPassword) {
+        if (storedPassword == null || suppliedPassword == null) {
+            return false;
+        }
+        return isBcryptHash(storedPassword)
+                ? passwordEncoder.matches(suppliedPassword, storedPassword)
+                : storedPassword.equals(suppliedPassword);
+    }
+
+    private boolean isBcryptHash(String password) {
+        return password != null && password.matches("^\\$2[aby]\\$\\d{2}\\$.{53}$");
     }
 
     @Override

@@ -1,6 +1,7 @@
 package com.musketeers.porttrack.security;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -18,6 +19,7 @@ import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import java.util.List;
+import java.util.stream.Stream;
 
 @Configuration
 @EnableWebSecurity
@@ -26,6 +28,9 @@ public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
+
+    @Value("${app.frontend.origins:http://localhost:5173}")
+    private String frontendOrigins;
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -47,20 +52,21 @@ public class SecurityConfig {
                     .authenticationEntryPoint(jwtAuthenticationEntryPoint)
             )
             .authorizeHttpRequests(auth -> auth
-                    .requestMatchers("/api/auth/**").permitAll() // Mở toàn bộ quyền cho Đăng nhập/Đăng ký
-                    .anyRequest().authenticated() // Bắt buộc truyền Token với các API còn lại
+                    .requestMatchers("/api/auth/**", "/api/health").permitAll()
+                    .anyRequest().authenticated()
             );
 
         http.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
-
         return http.build();
     }
 
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        // Cấp quyền riêng cho Frontend
-        configuration.setAllowedOrigins(List.of("http://localhost:5173")); 
+        configuration.setAllowedOrigins(Stream.of(frontendOrigins.split(","))
+                .map(String::trim)
+                .filter(origin -> !origin.isEmpty())
+                .toList());
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("Authorization", "Content-Type", "Accept"));
         configuration.setAllowCredentials(true);

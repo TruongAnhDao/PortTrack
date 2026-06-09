@@ -16,10 +16,10 @@ import java.util.Date;
 public class JwtTokenProvider {
 
     // Chuỗi bí mật (Nên để trong application.properties). Đây là chuỗi base64 ngẫu nhiên 256-bit an toàn.
-    @Value("${app.jwt.secret:404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970}")
+    @Value("${app.jwt.secret}")
     private String jwtSecret;
 
-    @Value("${app.jwt.expiration-milliseconds:86400000}") // 24h
+    @Value("${app.jwt.expiration-milliseconds:86400000}")
     private long jwtExpirationDate;
 
     private SecretKey key() {

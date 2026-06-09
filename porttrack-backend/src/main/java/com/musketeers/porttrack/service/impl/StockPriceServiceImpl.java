@@ -3,6 +3,7 @@ package com.musketeers.porttrack.service.impl;
 import com.musketeers.porttrack.dto.response.StockPriceResponse;
 import com.musketeers.porttrack.service.StockPriceService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
@@ -35,6 +36,9 @@ public class StockPriceServiceImpl implements StockPriceService {
     private final HttpClient httpClient = HttpClient.newHttpClient();
     private final Map<String, CachedQuote> quoteCache = new ConcurrentHashMap<>();
 
+    @Value("${app.entrade.base-url}")
+    private String entradeBaseUrl;
+
     @Override
     public BigDecimal getCurrentPrice(String symbol) {
         return getLatestQuote(symbol).getPrice();
@@ -60,7 +64,7 @@ public class StockPriceServiceImpl implements StockPriceService {
             long toDate = now.getEpochSecond();
             long fromDate = toDate - (3L * 24 * 60 * 60);
             String encodedSymbol = URLEncoder.encode(normalizedSymbol, StandardCharsets.UTF_8);
-            String url = "https://services.entrade.com.vn/chart-api/v2/ohlcs/stock"
+            String url = entradeBaseUrl
                     + "?from=" + fromDate
                     + "&to=" + toDate
                     + "&symbol=" + encodedSymbol

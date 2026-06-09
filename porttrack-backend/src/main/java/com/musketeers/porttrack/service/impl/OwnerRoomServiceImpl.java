@@ -23,6 +23,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -43,6 +44,7 @@ public class OwnerRoomServiceImpl implements OwnerRoomService {
     private final TransactionRepository transactionRepository;
     private final UserRepository userRepository;
     private final StockPriceService stockPriceService;
+    private final PasswordEncoder passwordEncoder;
 
     @Override
     @Transactional(readOnly = true)
@@ -157,7 +159,7 @@ public class OwnerRoomServiceImpl implements OwnerRoomService {
 
         if (room.getType() == RoomType.PRIVATE) {
             if (request.getPassword() != null && !request.getPassword().isBlank()) {
-                room.setPassword(request.getPassword());
+                room.setPassword(passwordEncoder.encode(request.getPassword()));
             }
             if (room.getPassword() == null || room.getPassword().isBlank()) {
                 throw new RuntimeException("Private room requires a password.");

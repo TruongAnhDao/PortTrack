@@ -12,7 +12,7 @@ id (BIGINT): mã phòng
 name (VARCHAR): tên phòng
 code (VARCHAR): mã phòng duy nhất
 type (ENUM): loại phòng (public/private)
-password (VARCHAR): mật khẩu phòng
+password (VARCHAR): BCrypt hash của mật khẩu phòng riêng; phòng công khai để NULL
 owner_id (BIGINT): người tạo phòng
 initial_balance (DECIMAL): vốn khởi tạo
 status (ENUM): trạng thái phòng
