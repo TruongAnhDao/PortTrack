@@ -119,8 +119,7 @@ PortTrack/
     │   ├── main.tsx                     # Điểm vào đầu tiên, nhúng code React vào index.html
     │   └── assets/                      # Thư mục chứa tài nguyên hình ảnh
     │       ├── hero.png                 # Ảnh minh họa/banner có thể dùng cho trang chủ
-    │       ├── react.svg                # File logo của React
-    │       └── vite.svg                 # File logo của Vite
+    │       └── logo.png                 # Logo PortTrack
     ├── tsconfig.app.json                # Cấu hình TypeScript dành riêng cho code giao diện React
     ├── tsconfig.json                    # Cấu hình TypeScript tổng quát cho toàn dự án
     ├── tsconfig.node.json               # Cấu hình TypeScript dành cho môi trường build (Vite/Node)
