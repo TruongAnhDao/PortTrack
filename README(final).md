@@ -2,11 +2,11 @@
 Group code: G05
 
 ## Team members
-- Nguyen Anh Thu  2312380036 - Team Leader & Database Coordinator
-- To Ha Vy - 2313380039 - Backend 1 – Authentication, Security, and Trading Room Management
-- Pham Quoc Thai - 2313380033 - Backend 2: Trading Operations, Portfolio Management, and Stock Price Integration
-- Pham Linh Nhan - 2312380024 - Frontend 1 – Authentication, Dashboard, and User Flow
-- Dang Ngoc Linh - 2312380018 - Frontend 2 – Room Management, Trading, Portfolio, and Transaction History
+| Nguyen Anh Thu | 2312380036 | Team Leader & Database Coordinator |
+| To Ha Vy | 2313380039 | Backend 1 – Authentication, Security, and Trading Room Management |
+| Pham Quoc Thai | 2313380033 | Backend 2: Trading Operations, Portfolio Management, and Stock Price Integration |
+| Pham Linh Nhan | 2312380024 | Frontend 1 – Authentication, Dashboard, and User Flow |
+| Dang Ngoc Linh | 2312380018 | Frontend 2 – Room Management, Trading, Portfolio, and Transaction History |
 
 ## Project overview
 PortTrack is a web-based stock investment simulation platform developed for educational purposes. It allows students to practice stock trading with virtual capital, manage portfolios, and track investment performance. Lecturers can monitor trading activities and evaluate students’ results transparently.
@@ -30,22 +30,7 @@ The platform is used during investment simulation activities and classroom proje
 - Ranking and performance comparison
 
 ## How to run
-**1. Start the Backend (Spring Boot)**
-- Open Terminal, navigate to `cd porttrack-backend`
-- Make sure Java 17 is installed and the MySQL is set correcctly in `application.properties`.
-- Run:
-  - Windows: `.\mvnw spring-boot:run` or run file app
-  - Mac/Linux: `./mvnw spring-boot:run`
-- Server will be available at: `http://localhost:8081`
-
-**2. Start the Frontend (ReactJS + Vite)**
-- Open another Terminal, navigate to `cd porttrack-frontend`
-- Install dependencies (first time only): `npm install`, `npm install axios react-router-dom`
-
-- Start the frontend application: `npm run dev`
-- Open browser and visit: `http://localhost:5173`
-
-## Demo steps
+- Open demo link: https://port-track-xi.vercel.app/
 - Register or log in.
 - Create or join an investment room.
 - Buy and sell stocks.
@@ -53,8 +38,7 @@ The platform is used during investment simulation activities and classroom proje
 - Check rankings and investment results.
 
 ## Demo link
-- Demo link: 
-- Demo account: 
+- Demo link: https://port-track-xi.vercel.app/
 
 ## Data notes
 The system uses user-generated data and real-time stock market data for investment simulation. All portfolio and transaction data are stored in MySQL.
