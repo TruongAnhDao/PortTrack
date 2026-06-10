@@ -15,12 +15,6 @@ Schema database vẫn được quản lý thủ công bằng `CREATE_TABLE.TXT`.
 2. Chạy `CREATE_TABLE.TXT` trên database mới, hoặc import bản dump của database hiện tại.
 3. Lưu lại JDBC URL, username và password.
 
-JDBC URL phải có dạng do nhà cung cấp database hướng dẫn, ví dụ:
-
-```text
-jdbc:mysql://host:4000/port_track?sslMode=VERIFY_IDENTITY
-```
-
 Không đưa password database vào Git.
 
 ## 2. Deploy backend lên Render
@@ -30,15 +24,6 @@ Repository đã có `render.yaml` và `porttrack-backend/Dockerfile`.
 1. Push repository lên GitHub.
 2. Trong Render chọn **New > Blueprint** và kết nối repository.
 3. Điền các biến môi trường:
-
-```text
-DB_URL=<JDBC URL cua database cloud>
-DB_USERNAME=<database username>
-DB_PASSWORD=<database password>
-JWT_SECRET=<Base64 secret toi thieu 32 bytes>
-FRONTEND_ORIGINS=<URL frontend Vercel>
-ENTRADE_API_URL=https://services.entrade.com.vn/chart-api/v2/ohlcs/stock
-```
 
 Tạo JWT secret trên PowerShell:
 
@@ -59,7 +44,7 @@ FRONTEND_ORIGINS=http://localhost:5173
 Sau khi backend chạy, kiểm tra:
 
 ```text
-https://<render-service>.onrender.com/api/health
+https://porttrack.onrender.com.onrender.com/api/health
 ```
 
 Kết quả mong đợi:
@@ -76,7 +61,7 @@ Kết quả mong đợi:
 4. Thêm biến môi trường:
 
 ```text
-VITE_API_URL=https://<render-service>.onrender.com
+VITE_API_URL=https://porttrack.onrender.com
 ```
 
 5. Deploy frontend.
@@ -89,25 +74,19 @@ các route con.
 Sau khi có URL Vercel, sửa biến Render:
 
 ```text
-FRONTEND_ORIGINS=https://<vercel-project>.vercel.app
-```
-
-Nếu cần nhiều origin, phân tách bằng dấu phẩy:
-
-```text
-FRONTEND_ORIGINS=http://localhost:5173,https://<vercel-project>.vercel.app
+FRONTEND_ORIGINS=https://port-track-xi.vercel.app/
 ```
 
 Sau đó redeploy backend.
 
 ## Chạy local sau thay đổi bảo mật
 
-Backend không còn chứa password database và JWT secret trong source code.
-Máy local có thể dùng file `porttrack-backend/.env` bị Git bỏ qua và chạy:
+Backend không chứa password database và JWT secret trong source code.
+Khi chạy local, thiết lập các biến môi trường cần thiết rồi chạy:
 
 ```powershell
 cd porttrack-backend
-.\run-local.cmd
+.\mvnw.cmd spring-boot:run
 ```
 
 Frontend vẫn mặc định gọi `http://localhost:8081`. Có thể tạo file `.env` trong
