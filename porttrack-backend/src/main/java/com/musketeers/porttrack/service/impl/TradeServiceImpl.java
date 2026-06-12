@@ -32,7 +32,7 @@ public class TradeServiceImpl implements TradeService {
 
     private static final BigDecimal TRADING_FEE_RATE = new BigDecimal("0.0015");
     private static final BigDecimal SELLING_TAX_RATE = new BigDecimal("0.0010");
-    private static final int SETTLEMENT_DAYS = 2;
+    private static final int SETTLEMENT_DAYS = 1;
 
     private User getCurrentUser() {
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
