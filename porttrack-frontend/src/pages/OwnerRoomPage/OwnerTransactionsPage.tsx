@@ -84,7 +84,7 @@ export const OwnerTransactionsPage: React.FC = () => {
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
       <header>
         <h1 className="text-4xl font-black text-white tracking-tight">Transactions Overview</h1>
-        <p className="mt-2 text-slate-400 font-medium">Review order flow across every player in this room.</p>
+        <p className="mt-2 text-slate-400 font-medium">Review order flow across every student in this room.</p>
       </header>
 
       <div className="grid grid-cols-1 md:grid-cols-4 gap-5">
@@ -115,7 +115,7 @@ export const OwnerTransactionsPage: React.FC = () => {
             <input
               value={query}
               onChange={(event) => setQuery(event.target.value)}
-              placeholder="Search ticker or player"
+              placeholder="Search ticker or student"
               className="w-full rounded-2xl border border-slate-700 bg-slate-950/70 py-4 pl-12 pr-5 text-white outline-none transition focus:border-blue-500"
             />
           </div>
@@ -140,7 +140,7 @@ export const OwnerTransactionsPage: React.FC = () => {
             <thead>
               <tr className="border-b border-slate-700/80 text-xs uppercase tracking-widest text-slate-500">
                 <th className="py-4 pr-4">Date</th>
-                <th className="py-4 pr-4">Player</th>
+                <th className="py-4 pr-4">Student</th>
                 <th className="py-4 pr-4">Stock</th>
                 <th className="py-4 pr-4">Type</th>
                 <th className="py-4 pr-4 text-right">Quantity</th>

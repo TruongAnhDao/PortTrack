@@ -71,8 +71,8 @@ export const RoomTradePage: React.FC = () => {
       return;
     }
 
-    if (quantity <= 0) {
-      setError('Enter a valid quantity before submitting.');
+    if (quantity < 100 || quantity % 100 !== 0) {
+      setError('Order quantity must be a multiple of 100.');
       return;
     }
 
@@ -97,6 +97,7 @@ export const RoomTradePage: React.FC = () => {
   const isPlayer = currentCashBalance !== null;
   const marketOpen = quote?.marketOpen ?? false;
   const canTrade = isPlayer && !!quote && marketOpen;
+  const isValidLot = quantity >= 100 && quantity % 100 === 0;
   const estimatedValue = quote ? quote.price * quantity : 0;
 
   return (
@@ -113,7 +114,7 @@ export const RoomTradePage: React.FC = () => {
           {!isPlayer && (
             <div className="mb-6 flex gap-3 rounded-2xl border border-amber-500/30 bg-amber-500/10 p-4 text-sm text-amber-100">
               <AlertCircle className="mt-0.5 shrink-0 text-amber-400" size={18} />
-              <p>This account is viewing the room as owner. Trading requires joining the room as a player.</p>
+              <p>This account is viewing the room as owner. Trading requires joining the room as a student.</p>
             </div>
           )}
 
@@ -193,17 +194,21 @@ export const RoomTradePage: React.FC = () => {
               <label className="text-[11px] font-black text-slate-500 uppercase tracking-widest ml-1">Quantity</label>
               <input
                 type="number"
-                min={1}
+                min={100}
+                step={100}
                 disabled={!canTrade}
                 className="w-full bg-slate-950/80 border-2 border-slate-700 rounded-2xl py-5 px-6 text-3xl font-mono font-black text-white focus:border-blue-500 focus:outline-none transition-all shadow-inner disabled:opacity-50 disabled:cursor-not-allowed"
                 value={quantity || ''}
                 onChange={(event) => setQuantity(Math.max(0, parseInt(event.target.value) || 0))}
               />
+              <p className={`ml-1 text-xs font-medium ${quantity > 0 && !isValidLot ? 'text-rose-400' : 'text-slate-500'}`}>
+                Orders must use lots of 100 shares (100, 200, 300, ...).
+              </p>
             </div>
 
             <button
-              disabled={!canTrade || isSubmitting || quantity <= 0}
-              className={`w-full py-6 rounded-2xl font-black text-lg uppercase tracking-widest transition-all flex items-center justify-center gap-3 border-2 ${!canTrade || isSubmitting || quantity <= 0 ? 'bg-slate-900 border-slate-800 text-slate-600 grayscale cursor-not-allowed' : mode === 'BUY' ? 'bg-emerald-600 border-emerald-500 text-white hover:bg-emerald-500 shadow-[0_0_30px_rgba(5,150,105,0.4)] hover:-translate-y-1' : 'bg-rose-600 border-rose-500 text-white hover:bg-rose-500 shadow-[0_0_30px_rgba(225,29,72,0.4)] hover:-translate-y-1'}`}
+              disabled={!canTrade || isSubmitting || !isValidLot}
+              className={`w-full py-6 rounded-2xl font-black text-lg uppercase tracking-widest transition-all flex items-center justify-center gap-3 border-2 ${!canTrade || isSubmitting || !isValidLot ? 'bg-slate-900 border-slate-800 text-slate-600 grayscale cursor-not-allowed' : mode === 'BUY' ? 'bg-emerald-600 border-emerald-500 text-white hover:bg-emerald-500 shadow-[0_0_30px_rgba(5,150,105,0.4)] hover:-translate-y-1' : 'bg-rose-600 border-rose-500 text-white hover:bg-rose-500 shadow-[0_0_30px_rgba(225,29,72,0.4)] hover:-translate-y-1'}`}
             >
               <Zap size={22} className={canTrade ? 'fill-white' : 'fill-transparent'} />
               {isSubmitting ? 'Submitting...' : quote && !marketOpen ? 'Market Closed' : 'Confirm Order'}

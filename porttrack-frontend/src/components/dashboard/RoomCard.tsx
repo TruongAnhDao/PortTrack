@@ -60,7 +60,7 @@ export const RoomCard: React.FC<RoomCardProps> = ({ room, variant, onActionClick
         <div className="bg-slate-950/80 p-4 rounded-2xl border border-slate-700/60 shadow-inner">
           <div className="flex items-center gap-2 text-slate-400 mb-1.5">
             <Users size={16} className="text-blue-400" />
-            <span className="text-[11px] font-bold uppercase tracking-wider">Players</span>
+            <span className="text-[11px] font-bold uppercase tracking-wider">Students</span>
           </div>
           <p className="text-2xl font-black text-white">{playerCount}</p>
         </div>

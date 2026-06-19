@@ -28,7 +28,7 @@ export const OwnerPlayersPage: React.FC = () => {
         if (!cancelled) setPlayers(result);
       } catch (err) {
         const apiError = err as { response?: { data?: { message?: string } } };
-        if (!cancelled) setError(apiError.response?.data?.message ?? 'Unable to load players.');
+        if (!cancelled) setError(apiError.response?.data?.message ?? 'Unable to load students.');
       } finally {
         if (!cancelled) setIsLoading(false);
       }
@@ -61,7 +61,7 @@ export const OwnerPlayersPage: React.FC = () => {
     return (
       <div className="min-h-[50vh] flex items-center justify-center text-slate-400">
         <Loader2 className="animate-spin mr-3" size={22} />
-        Loading players...
+        Loading students...
       </div>
     );
   }
@@ -78,13 +78,13 @@ export const OwnerPlayersPage: React.FC = () => {
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
       <header>
-        <h1 className="text-4xl font-black text-white tracking-tight">Player Management</h1>
-        <p className="mt-2 text-slate-400 font-medium">Track player capital, holdings and trading activity.</p>
+        <h1 className="text-4xl font-black text-white tracking-tight">Student Management</h1>
+        <p className="mt-2 text-slate-400 font-medium">Track student capital, holdings and trading activity.</p>
       </header>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
         {[
-          { label: 'Players', value: players.length.toString(), icon: <Users size={24} />, tone: 'text-blue-300' },
+          { label: 'Students', value: players.length.toString(), icon: <Users size={24} />, tone: 'text-blue-300' },
           { label: 'Profitable', value: totals.profitablePlayers.toString(), icon: <TrendingUp size={24} />, tone: 'text-emerald-300' },
           { label: 'Total Value', value: formatCurrency(totals.totalPortfolioValue), icon: <Wallet size={24} />, tone: 'text-white' },
         ].map((metric) => (
@@ -109,7 +109,7 @@ export const OwnerPlayersPage: React.FC = () => {
             <input
               value={query}
               onChange={(event) => setQuery(event.target.value)}
-              placeholder="Search player"
+              placeholder="Search student"
               className="w-full rounded-2xl border border-slate-700 bg-slate-950/70 py-4 pl-12 pr-5 text-white outline-none transition focus:border-blue-500"
             />
           </div>
@@ -122,7 +122,7 @@ export const OwnerPlayersPage: React.FC = () => {
           <table className="w-full min-w-[920px] text-left">
             <thead>
               <tr className="border-b border-slate-700/80 text-xs uppercase tracking-widest text-slate-500">
-                <th className="py-4 pr-4">Player</th>
+                <th className="py-4 pr-4">Student</th>
                 <th className="py-4 pr-4 text-right">Cash</th>
                 <th className="py-4 pr-4 text-right">Holdings</th>
                 <th className="py-4 pr-4 text-right">Total Value</th>
@@ -195,7 +195,7 @@ export const OwnerPlayersPage: React.FC = () => {
 
         {filteredPlayers.length === 0 && (
           <div className="rounded-2xl border border-slate-700/60 bg-slate-950/40 p-8 text-center text-slate-400">
-            No players found.
+            No students found.
           </div>
         )}
       </section>

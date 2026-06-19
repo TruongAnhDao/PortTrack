@@ -51,7 +51,7 @@ export const OwnerDashboardPage: React.FC = () => {
       : 'border-amber-500/30 bg-amber-500/10 text-amber-300';
 
   const metrics = useMemo(() => ([
-    { label: 'Players', value: String(dashboard?.playerCount ?? 0), icon: <Users size={24} />, tone: 'text-blue-300' },
+    { label: 'Students', value: String(dashboard?.playerCount ?? 0), icon: <Users size={24} />, tone: 'text-blue-300' },
     { label: 'Total Trades', value: String(dashboard?.totalTrades ?? 0), icon: <PlayCircle size={24} />, tone: 'text-white' },
     { label: 'Top Portfolio', value: formatCurrency(dashboard?.topPortfolioValue), icon: <Trophy size={24} />, tone: 'text-amber-300' },
     { label: 'Average Value', value: formatCurrency(dashboard?.averagePortfolioValue), icon: <Wallet size={24} />, tone: 'text-emerald-300' },

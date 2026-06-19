@@ -92,7 +92,7 @@ export const OwnerRoomLayout: React.FC = () => {
 
   const menuItems = [
     { name: 'Dashboard', path: `/owner/rooms/${roomId}`, icon: <LayoutDashboard size={18} /> },
-    { name: 'Players', path: `/owner/rooms/${roomId}/players`, icon: <Users size={18} /> },
+    { name: 'Students', path: `/owner/rooms/${roomId}/players`, icon: <Users size={18} /> },
     { name: 'Transactions', path: `/owner/rooms/${roomId}/transactions`, icon: <ReceiptText size={18} /> },
     { name: 'Leaderboard', path: `/owner/rooms/${roomId}/leaderboard`, icon: <Trophy size={18} /> },
   ];

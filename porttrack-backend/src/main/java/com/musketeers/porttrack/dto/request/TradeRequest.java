@@ -15,6 +15,6 @@ public class TradeRequest {
     private TradeAction action;
 
     @NotNull(message = "Quantity is required")
-    @Min(value = 1, message = "Trade quantity must be at least 1")
+    @Min(value = 100, message = "Trade quantity must be at least 100")
     private Long quantity;
 }

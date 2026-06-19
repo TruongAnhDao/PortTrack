@@ -33,6 +33,7 @@ public class TradeServiceImpl implements TradeService {
     private static final BigDecimal TRADING_FEE_RATE = new BigDecimal("0.0015");
     private static final BigDecimal SELLING_TAX_RATE = new BigDecimal("0.0010");
     private static final int SETTLEMENT_DAYS = 2;
+    private static final long LOT_SIZE = 100L;
 
     private User getCurrentUser() {
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
@@ -68,6 +69,10 @@ public class TradeServiceImpl implements TradeService {
 
         Portfolio portfolio = portfolioRepository.findByUserIdAndRoomId(currentUser.getId(), roomId)
                 .orElseThrow(() -> new RuntimeException("You have not joined this room."));
+
+        if (request.getQuantity() == null || request.getQuantity() < LOT_SIZE || request.getQuantity() % LOT_SIZE != 0) {
+            throw new RuntimeException("Order quantity must be a multiple of 100.");
+        }
 
         StockPriceResponse quote = stockPriceService.getLatestQuote(request.getStockSymbol());
         if (!quote.isMarketOpen()) {
@@ -183,7 +188,7 @@ public class TradeServiceImpl implements TradeService {
 
     private void requireStudent(User user) {
         if (user.getRole() != UserRole.STUDENT) {
-            throw new RuntimeException("Only students can access player trading features.");
+            throw new RuntimeException("Only students can access student trading features.");
         }
     }
 }

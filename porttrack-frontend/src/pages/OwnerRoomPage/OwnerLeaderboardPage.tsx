@@ -69,7 +69,7 @@ export const OwnerLeaderboardPage: React.FC = () => {
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
       <header>
         <h1 className="text-4xl font-black text-white tracking-tight">Leaderboard</h1>
-        <p className="mt-2 text-slate-400 font-medium">Rank players by current total portfolio value.</p>
+        <p className="mt-2 text-slate-400 font-medium">Rank students by current total portfolio value.</p>
       </header>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
@@ -94,7 +94,7 @@ export const OwnerLeaderboardPage: React.FC = () => {
 
       {entries.length === 0 ? (
         <div className="rounded-2xl border border-slate-700/60 bg-slate-900/60 p-12 text-center text-slate-400">
-          No players have joined this room yet.
+          No students have joined this room yet.
         </div>
       ) : (
         <>
@@ -118,7 +118,7 @@ export const OwnerLeaderboardPage: React.FC = () => {
                     <span className={`text-4xl font-black ${isWinner ? 'text-amber-300' : 'text-slate-500'}`}>#{entry.rank}</span>
                   </div>
                   <h2 className="truncate text-2xl font-black text-white">{entry.username}</h2>
-                  <p className="mt-1 text-xs font-bold text-slate-500">Player #{entry.userId}</p>
+                  <p className="mt-1 text-xs font-bold text-slate-500">Student #{entry.userId}</p>
                   <div className="mt-6 space-y-3">
                     <div className="flex items-center justify-between gap-4">
                       <span className="text-sm font-bold text-slate-500">Total Value</span>
@@ -147,7 +147,7 @@ export const OwnerLeaderboardPage: React.FC = () => {
                 <thead>
                   <tr className="border-b border-slate-700/80 text-xs uppercase tracking-widest text-slate-500">
                     <th className="py-4 pr-4">Rank</th>
-                    <th className="py-4 pr-4">Player</th>
+                    <th className="py-4 pr-4">Student</th>
                     <th className="py-4 pr-4 text-right">Cash</th>
                     <th className="py-4 pr-4 text-right">Holdings</th>
                     <th className="py-4 pr-4 text-right">Total Value</th>
@@ -185,7 +185,7 @@ export const OwnerLeaderboardPage: React.FC = () => {
 
             {tableEntries.length === 0 && entries.length <= 3 && (
               <div className="rounded-2xl border border-slate-700/60 bg-slate-950/40 p-8 text-center text-slate-400">
-                Top players are shown above.
+                Top students are shown above.
               </div>
             )}
           </section>
