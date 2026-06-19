@@ -177,6 +177,10 @@ export const RoomHomePage: React.FC = () => {
                 <p className="text-xs leading-relaxed text-slate-400">
                   Submit a viewable Google Sheet, Drive file, or document link.
                 </p>
+                <p className="mt-2 flex items-start gap-1.5 text-[11px] leading-relaxed text-amber-300/90">
+                  <AlertTriangle className="mt-0.5 shrink-0" size={13} />
+                  Please enable link access before submitting so your instructor can open the file.
+                </p>
               </div>
               {savedSubmissionUrl && (
                 <a
